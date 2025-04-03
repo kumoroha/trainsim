@@ -28,4 +28,14 @@ canvas {
     border: 1px solid #000;
     background-color: #fff;
     margin-top: 20px;
+    position: relative;
+}
+
+#entry-message {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 5px;
+    border: 1px solid #000;
 }
