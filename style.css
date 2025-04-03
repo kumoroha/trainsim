@@ -24,7 +24,9 @@ body {
     background-color: #e0e0e0;
 }
 
-canvas {
+#3d-container {
+    width: 800px;
+    height: 600px;
     border: 1px solid #000;
     background-color: #fff;
     margin-top: 20px;
