@@ -39,3 +39,14 @@ canvas {
     padding: 5px;
     border: 1px solid #000;
 }
+
+#result {
+    margin-top: 20px;
+    font-size: 1.5em;
+}
+
+#retry {
+    margin-top: 10px;
+    padding: 10px 20px;
+    font-size: 1em;
+}
