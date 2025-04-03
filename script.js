@@ -15,8 +15,9 @@ let inStation = false;
 let trainEntered = false;
 let scaleFactor = 2; // Scale factor for train when it enters the station
 
-const maxAccelerationPerSec = 2.0; // Maximum acceleration in km/h per second
-const maxDecelerationPerSec = -3.0; // Maximum deceleration in km/h per second
+const maxAccelerationPerSec = 2.5; // Maximum acceleration in km/h per second
+const maxDecelerationPerSec = -4.6; // Maximum deceleration in km/h per second for B8
+const ebDecelerationPerSec = -5.2; // Emergency brake deceleration in km/h per second
 const updateInterval = 100; // Update interval in milliseconds
 const stationLineX = canvas.width - 150; // Position of the station entry line
 
@@ -39,7 +40,9 @@ const getNotchDisplay = (notch) => {
 
 const updateTrainPosition = () => {
     let acceleration = 0;
-    if (notch < 0) {
+    if (notch === -9) {
+        acceleration = ebDecelerationPerSec; // Emergency brake
+    } else if (notch < 0) {
         acceleration = maxDecelerationPerSec * (Math.abs(notch) / 8); // Adjust deceleration
     } else if (notch > 0) {
         acceleration = maxAccelerationPerSec * (notch / 5); // Adjust acceleration
