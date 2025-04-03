@@ -8,7 +8,6 @@ let remainingDistance = 5.0; // in km
 let speed = 0; // km/h
 let targetSpeed = 0; // km/h
 let notch = 0; // Notch position
-let brake = 0; // Brake level (0-8 for regular brakes, 9 for emergency brake)
 let trainX = 0; // Train position
 let trainSpeed = 0; // Train speed in pixels per frame
 let paused = false;
@@ -19,21 +18,19 @@ let scaleFactor = 2; // Scale factor for train when it enters the station
 const maxAccelerationPerSec = 2.0; // Maximum acceleration in km/h per second
 const maxDecelerationPerSec = -3.0; // Maximum deceleration in km/h per second
 const updateInterval = 100; // Update interval in milliseconds
-const stationLineX = canvas.width - 200; // Position of the station entry line
+const stationLineX = canvas.width - 150; // Position of the station entry line
 
 const updateDashboard = () => {
     document.getElementById('remaining-time').innerText = Math.floor(remainingTime);
     document.getElementById('remaining-distance').innerText = remainingDistance.toFixed(1) + ' km';
     document.getElementById('speed').innerText = speed.toFixed(1) + ' km/h';
-    document.getElementById('notch').innerText = `N${notch} B${brake}`;
+    document.getElementById('notch').innerText = `N${notch}`;
 };
 
 const updateTrainPosition = () => {
     let acceleration = 0;
-    if (brake === 9) {
-        acceleration = maxDecelerationPerSec * 2; // Emergency brake
-    } else if (brake > 0) {
-        acceleration = maxDecelerationPerSec * (brake / 8);
+    if (notch < 0) {
+        acceleration = maxDecelerationPerSec * (Math.abs(notch) / 8);
     } else if (notch > 0) {
         acceleration = maxAccelerationPerSec * (notch / 5);
     }
@@ -111,16 +108,10 @@ const update = () => {
 
 document.getElementById('notch-up').addEventListener('click', () => {
     if (notch < 5) notch++;
-    if (brake > 0) brake = 0; // Reset brake when accelerating
 });
 
 document.getElementById('notch-down').addEventListener('click', () => {
-    if (notch > 0) notch--;
-});
-
-document.getElementById('brake').addEventListener('click', () => {
-    if (brake < 9) brake++;
-    if (notch > 0) notch = 0; // Reset notch when braking
+    if (notch > -8) notch--;
 });
 
 document.getElementById('pause').addEventListener('click', () => {
