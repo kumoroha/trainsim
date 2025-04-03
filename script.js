@@ -30,9 +30,9 @@ const updateDashboard = () => {
 const updateTrainPosition = () => {
     let acceleration = 0;
     if (notch < 0) {
-        acceleration = maxDecelerationPerSec * (Math.abs(notch) / 8);
+        acceleration = maxDecelerationPerSec * (Math.abs(notch) / 8); // Adjust deceleration
     } else if (notch > 0) {
-        acceleration = maxAccelerationPerSec * (notch / 5);
+        acceleration = maxAccelerationPerSec * (notch / 5); // Adjust acceleration
     }
 
     // Update speed with acceleration
@@ -51,6 +51,7 @@ const updateTrainPosition = () => {
         inStation = true;
         trainX = stationLineX;
         speed /= scaleFactor; // Adjust speed for scale
+        trainSpeed /= scaleFactor; // Adjust train speed for scale
     }
 
     if (trainEntered && trainX >= (canvas.width - 100)) {
