@@ -1,14 +1,7 @@
-let canvas = document.getElementById('train-simulation');
-let ctx = canvas.getContext('2d');
-canvas.width = 800;
-canvas.height = 200;
-
 let remainingTime = 120; // 2 minutes in seconds
 let remainingDistance = 5.0; // in km
 let speed = 0; // km/h
 let notch = 0; // Notch position
-let trainX = 0; // Train position
-let trainSpeed = 0; // Train speed in pixels per frame
 
 const updateDashboard = () => {
     document.getElementById('remaining-time').innerText = `${Math.floor(remainingTime / 60)}:${(remainingTime % 60).toString().padStart(2, '0')}`;
@@ -17,33 +10,24 @@ const updateDashboard = () => {
     document.getElementById('notch').innerText = notch;
 };
 
-const updateTrainPosition = () => {
-    trainSpeed = speed / 3.6 * 0.1; // Convert km/h to pixels/frame
-    trainX += trainSpeed;
-    remainingDistance -= speed / 36000; // Convert km/h to km/frame
-    if (remainingDistance < 0) remainingDistance = 0;
-};
+// Three.js setup
+let scene = new THREE.Scene();
+let camera = new THREE.PerspectiveCamera(75, 800 / 600, 0.1, 1000);
+let renderer = new THREE.WebGLRenderer();
+renderer.setSize(800, 600);
+document.getElementById('3d-container').appendChild(renderer.domElement);
 
-const drawTrain = () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = 'blue';
-    ctx.fillRect(trainX, canvas.height / 2 - 10, 50, 20);
-    // Draw stopping line
-    ctx.strokeStyle = 'red';
-    ctx.beginPath();
-    ctx.moveTo(750, canvas.height / 2 - 20);
-    ctx.lineTo(750, canvas.height / 2 + 20);
-    ctx.stroke();
-};
+let geometry = new THREE.BoxGeometry(1, 1, 3);
+let material = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+let train = new THREE.Mesh(geometry, material);
+scene.add(train);
 
-const update = () => {
-    updateTrainPosition();
-    drawTrain();
-    updateDashboard();
-    remainingTime -= 0.1; // Decrement remaining time
-    if (remainingTime < 0) remainingTime = 0;
-    if (trainX >= 750) speed = 0; // Stop train at stopping line
-    requestAnimationFrame(update);
+camera.position.z = 5;
+
+const animate = () => {
+    requestAnimationFrame(animate);
+    train.position.z -= speed / 3600; // Move train forward based on speed
+    renderer.render(scene, camera);
 };
 
 document.getElementById('notch-up').addEventListener('click', () => {
@@ -61,4 +45,12 @@ document.getElementById('brake').addEventListener('click', () => {
     notch = 0;
 });
 
-update();
+animate();
+updateDashboard();
+setInterval(() => {
+    remainingTime -= 1;
+    if (remainingTime < 0) remainingTime = 0;
+    remainingDistance -= speed / 3600; // Update remaining distance
+    if (remainingDistance < 0) remainingDistance = 0;
+    updateDashboard();
+}, 1000);
