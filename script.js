@@ -13,10 +13,13 @@ let trainX = 0; // Train position
 let trainSpeed = 0; // Train speed in pixels per frame
 let paused = false;
 let inStation = false;
+let trainEntered = false;
+let scaleFactor = 2; // Scale factor for train when it enters the station
 
-const maxAcceleration = 0.2; // Maximum acceleration in km/h per update
-const maxDeceleration = -0.3; // Maximum deceleration in km/h per update
+const maxAccelerationPerSec = 2.0; // Maximum acceleration in km/h per second
+const maxDecelerationPerSec = -3.0; // Maximum deceleration in km/h per second
 const updateInterval = 100; // Update interval in milliseconds
+const stationLineX = canvas.width - 200; // Position of the station entry line
 
 const updateDashboard = () => {
     document.getElementById('remaining-time').innerText = Math.floor(remainingTime);
@@ -28,43 +31,68 @@ const updateDashboard = () => {
 const updateTrainPosition = () => {
     let acceleration = 0;
     if (brake === 9) {
-        acceleration = maxDeceleration * 2; // Emergency brake
+        acceleration = maxDecelerationPerSec * 2; // Emergency brake
     } else if (brake > 0) {
-        acceleration = maxDeceleration * (brake / 8);
-    } else if (targetSpeed > speed) {
-        acceleration = maxAcceleration;
-    } else if (targetSpeed < speed) {
-        acceleration = maxDeceleration;
+        acceleration = maxDecelerationPerSec * (brake / 8);
+    } else if (notch > 0) {
+        acceleration = maxAccelerationPerSec * (notch / 5);
     }
 
     // Update speed with acceleration
     speed += acceleration * (updateInterval / 1000);
     if (speed < 0) speed = 0;
-    if (speed > targetSpeed && acceleration > 0) speed = targetSpeed;
-    if (speed < targetSpeed && acceleration < 0) speed = targetSpeed;
 
     // Convert speed from km/h to pixels/frame
     trainSpeed = speed / 3.6 * (updateInterval / 1000);
     trainX += trainSpeed;
     remainingDistance -= speed / 3600 * (updateInterval / 1000); // Convert km/h to km/frame
     if (remainingDistance < 0) remainingDistance = 0;
-    if (trainX >= canvas.width - 100) {
-        trainX = canvas.width - 100;
+
+    // Check if the train enters the station
+    if (!trainEntered && trainX >= stationLineX) {
+        trainEntered = true;
         inStation = true;
+        trainX = stationLineX;
+        speed /= scaleFactor; // Adjust speed for scale
+    }
+
+    if (trainEntered && trainX >= (canvas.width - 100)) {
+        trainX = canvas.width - 100;
     }
 };
 
 const drawTrain = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw station entry line
+    ctx.strokeStyle = 'green';
+    ctx.beginPath();
+    ctx.moveTo(stationLineX, 0);
+    ctx.lineTo(stationLineX, canvas.height);
+    ctx.stroke();
+
     ctx.fillStyle = 'blue';
-    ctx.fillRect(trainX, canvas.height / 2 - 15, inStation ? 200 : 100, 30);
     if (inStation) {
+        ctx.fillRect(trainX, canvas.height / 2 - 15 * scaleFactor, 100 * scaleFactor, 30 * scaleFactor);
         // Draw stopping line
         ctx.strokeStyle = 'red';
         ctx.beginPath();
         ctx.moveTo(canvas.width - 100, canvas.height / 2 - 30);
         ctx.lineTo(canvas.width - 100, canvas.height / 2 + 30);
         ctx.stroke();
+    } else {
+        ctx.fillRect(trainX, canvas.height / 2 - 15, 100, 30);
+    }
+};
+
+const displayEntryMessage = () => {
+    if (trainEntered) {
+        if (!document.getElementById('entry-message')) {
+            const entryMessage = document.createElement('div');
+            entryMessage.id = 'entry-message';
+            entryMessage.innerText = 'ホームに入線しました';
+            document.body.appendChild(entryMessage);
+        }
     }
 };
 
@@ -73,6 +101,7 @@ const update = () => {
         updateTrainPosition();
         drawTrain();
         updateDashboard();
+        displayEntryMessage();
         remainingTime -= updateInterval / 1000; // Decrement remaining time
         if (remainingTime < 0) remainingTime = 0;
         if (trainX >= canvas.width - 100) speed = 0; // Stop train at the end
@@ -83,18 +112,15 @@ const update = () => {
 document.getElementById('notch-up').addEventListener('click', () => {
     if (notch < 5) notch++;
     if (brake > 0) brake = 0; // Reset brake when accelerating
-    targetSpeed += 1; // Increase target speed by 1 km/h
 });
 
 document.getElementById('notch-down').addEventListener('click', () => {
     if (notch > 0) notch--;
-    targetSpeed -= 1; // Decrease target speed by 1 km/h
 });
 
 document.getElementById('brake').addEventListener('click', () => {
     if (brake < 9) brake++;
     if (notch > 0) notch = 0; // Reset notch when braking
-    targetSpeed = Math.max(targetSpeed - 1, 0); // Decrease target speed by 1 km/h or set to 0
 });
 
 document.getElementById('pause').addEventListener('click', () => {
