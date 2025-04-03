@@ -6,14 +6,10 @@ canvas.height = 300;
 let remainingTime = 120; // 2 minutes in seconds
 let remainingDistance = 7.7; // in km
 let speed = 0; // km/h
-let targetSpeed = 0; // km/h
 let notch = 0; // Notch position
 let trainX = 0; // Train position
 let trainSpeed = 0; // Train speed in pixels per frame
 let paused = false;
-let inStation = false;
-let trainEntered = false;
-let scaleFactor = 1; // Scale factor for train when it enters the station
 
 const maxAccelerationPerSec = 2.5; // Maximum acceleration in km/h per second
 const maxDecelerationPerSec = -4.6; // Maximum deceleration in km/h per second for B8
@@ -103,8 +99,6 @@ const resetGame = () => {
     notch = 0;
     trainX = 0;
     paused = false;
-    inStation = false;
-    trainEntered = false;
     document.getElementById('result').style.display = 'none';
     document.getElementById('retry').style.display = 'none';
     updateDashboard();
