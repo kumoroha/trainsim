@@ -4,7 +4,7 @@ canvas.width = 1200;
 canvas.height = 300;
 
 let remainingTime = 120; // 2 minutes in seconds
-let remainingDistance = 5.0; // in km
+let remainingDistance = 7.7; // in km
 let speed = 0; // km/h
 let targetSpeed = 0; // km/h
 let notch = 0; // Notch position
@@ -19,7 +19,9 @@ const maxAccelerationPerSec = 2.5; // Maximum acceleration in km/h per second
 const maxDecelerationPerSec = -4.6; // Maximum deceleration in km/h per second for B8
 const ebDecelerationPerSec = -5.2; // Emergency brake deceleration in km/h per second
 const updateInterval = 100; // Update interval in milliseconds
-const stationLineX = canvas.width - 20; // Position of the station entry line (20px from the right edge)
+const stoppingLineX = canvas.width - 20; // Position of the stopping line (20px from the right edge)
+const stoppingZoneStart = stoppingLineX - 10; // Start of the stopping zone
+const stoppingZoneEnd = stoppingLineX + 10; // End of the stopping zone
 
 const updateDashboard = () => {
     document.getElementById('remaining-time').innerText = Math.floor(remainingTime);
@@ -58,53 +60,52 @@ const updateTrainPosition = () => {
     remainingDistance -= speed / 3600 * (updateInterval / 1000); // Convert km/h to km/frame
     if (remainingDistance < 0) remainingDistance = 0;
 
-    // Check if the train enters the station
-    if (!trainEntered && trainX >= stationLineX) {
-        trainEntered = true;
-        inStation = true;
-        canvas.width *= 2; // Double the canvas width to simulate zooming in
-        trainX = 0; // Move train to the left edge
-        speed /= 2; // Adjust speed for the new scale
-    }
-
-    if (trainEntered && trainX >= (canvas.width - 100)) {
-        trainX = canvas.width - 100;
+    // Check if the train reaches the stopping zone
+    if (trainX >= stoppingZoneStart && trainX <= stoppingZoneEnd) {
+        displayResult('合格');
+    } else if (trainX > stoppingZoneEnd) {
+        displayResult('不合格');
     }
 };
 
 const drawTrain = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Draw station entry line
-    ctx.strokeStyle = 'green';
+    // Draw stopping zone
+    ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+    ctx.fillRect(stoppingZoneStart, 0, 20, canvas.height);
+
+    // Draw stopping line
+    ctx.strokeStyle = 'red';
     ctx.beginPath();
-    ctx.moveTo(stationLineX, 0);
-    ctx.lineTo(stationLineX, canvas.height);
+    ctx.moveTo(stoppingLineX, 0);
+    ctx.lineTo(stoppingLineX, canvas.height);
     ctx.stroke();
 
     ctx.fillStyle = 'blue';
-    if (inStation) {
-        ctx.fillRect(trainX, canvas.height / 2 - 15 * scaleFactor, 100 * scaleFactor, 30 * scaleFactor);
-        // Draw stopping line
-        ctx.strokeStyle = 'red';
-        ctx.beginPath();
-        ctx.moveTo(canvas.width - 100, canvas.height / 2 - 30);
-        ctx.lineTo(canvas.width - 100, canvas.height / 2 + 30);
-        ctx.stroke();
-    } else {
-        ctx.fillRect(trainX, canvas.height / 2 - 15, 100, 30);
-    }
+    ctx.fillRect(trainX, canvas.height / 2 - 15, 100, 30);
 };
 
-const displayEntryMessage = () => {
-    if (trainEntered) {
-        if (!document.getElementById('entry-message')) {
-            const entryMessage = document.createElement('div');
-            entryMessage.id = 'entry-message';
-            entryMessage.innerText = 'ホームに入線しました';
-            document.body.appendChild(entryMessage);
-        }
-    }
+const displayResult = (result) => {
+    paused = true;
+    document.getElementById('result').innerText = result;
+    document.getElementById('result').style.display = 'block';
+    document.getElementById('retry').style.display = 'block';
+};
+
+const resetGame = () => {
+    remainingTime = 120;
+    remainingDistance = 7.7;
+    speed = 0;
+    notch = 0;
+    trainX = 0;
+    paused = false;
+    inStation = false;
+    trainEntered = false;
+    document.getElementById('result').style.display = 'none';
+    document.getElementById('retry').style.display = 'none';
+    updateDashboard();
+    drawTrain();
 };
 
 const update = () => {
@@ -112,7 +113,6 @@ const update = () => {
         updateTrainPosition();
         drawTrain();
         updateDashboard();
-        displayEntryMessage();
         remainingTime -= updateInterval / 1000; // Decrement remaining time
         if (remainingTime < 0) remainingTime = 0;
         if (trainX >= canvas.width - 100) speed = 0; // Stop train at the end
@@ -135,5 +135,7 @@ document.getElementById('pause').addEventListener('click', () => {
 document.getElementById('resume').addEventListener('click', () => {
     paused = false;
 });
+
+document.getElementById('retry').addEventListener('click', resetGame);
 
 update();
