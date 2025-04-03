@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電車でGO! シミュレーション</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="dashboard">
+        <div>残り時間: <span id="remaining-time">00:00</span></div>
+        <div>残り距離: <span id="remaining-distance">0.0 km</span></div>
+        <div>速度: <span id="speed">0 km/h</span></div>
+        <div>ノッチ: <span id="notch">N</span></div>
+    </div>
+    <div class="controls">
+        <button id="notch-up">ノッチアップ</button>
+        <button id="notch-down">ノッチダウン</button>
+        <button id="brake">ブレーキ</button>
+    </div>
+    <canvas id="train-simulation"></canvas>
+    <script src="script.js"></script>
+</body>
+</html>
