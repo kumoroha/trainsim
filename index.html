@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>電車でGO! シミュレーション (3D)</title>
+    <title>電車でGO! シミュレーション</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -17,9 +17,10 @@
         <button id="notch-up">ノッチアップ</button>
         <button id="notch-down">ノッチダウン</button>
         <button id="brake">ブレーキ</button>
+        <button id="pause">一時停止</button>
+        <button id="resume">再開</button>
     </div>
-    <div id="3d-container"></div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <canvas id="train-simulation"></canvas>
     <script src="script.js"></script>
 </body>
 </html>
