@@ -22,6 +22,7 @@ const updateInterval = 100; // Update interval in milliseconds
 const stoppingLineX = canvas.width - 20; // Position of the stopping line (20px from the right edge)
 const stoppingZoneStart = stoppingLineX - 10; // Start of the stopping zone
 const stoppingZoneEnd = stoppingLineX + 10; // End of the stopping zone
+const pixelsPerKm = canvas.width / 7.7; // Pixels per km based on the canvas width and total distance
 
 const updateDashboard = () => {
     document.getElementById('remaining-time').innerText = Math.floor(remainingTime);
@@ -55,7 +56,7 @@ const updateTrainPosition = () => {
     if (speed < 0) speed = 0;
 
     // Convert speed from km/h to pixels/frame
-    trainSpeed = speed / 3.6 * (updateInterval / 1000);
+    trainSpeed = (speed / 3.6) * (updateInterval / 1000) * pixelsPerKm;
     trainX += trainSpeed;
     remainingDistance -= speed / 3600 * (updateInterval / 1000); // Convert km/h to km/frame
     if (remainingDistance < 0) remainingDistance = 0;
