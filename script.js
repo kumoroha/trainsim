@@ -24,7 +24,17 @@ const updateDashboard = () => {
     document.getElementById('remaining-time').innerText = Math.floor(remainingTime);
     document.getElementById('remaining-distance').innerText = remainingDistance.toFixed(1) + ' km';
     document.getElementById('speed').innerText = speed.toFixed(1) + ' km/h';
-    document.getElementById('notch').innerText = `N${notch}`;
+    document.getElementById('notch').innerText = getNotchDisplay(notch);
+};
+
+const getNotchDisplay = (notch) => {
+    if (notch > 0) {
+        return `P${notch}`;
+    } else if (notch < 0) {
+        return notch === -9 ? 'EB' : `B${Math.abs(notch)}`;
+    } else {
+        return 'N';
+    }
 };
 
 const updateTrainPosition = () => {
@@ -112,7 +122,7 @@ document.getElementById('notch-up').addEventListener('click', () => {
 });
 
 document.getElementById('notch-down').addEventListener('click', () => {
-    if (notch > -8) notch--;
+    if (notch > -9) notch--;
 });
 
 document.getElementById('pause').addEventListener('click', () => {
