@@ -62,10 +62,12 @@ const updateTrainPosition = () => {
     if (remainingDistance < 0) remainingDistance = 0;
 
     // Check if the train reaches the stopping zone
-    if (trainX >= stoppingZoneStart && trainX <= stoppingZoneEnd) {
-        displayResult('合格');
-    } else if (trainX > stoppingZoneEnd) {
-        displayResult('不合格');
+    if (remainingDistance <= 0) {
+        if (trainX >= stoppingZoneStart && trainX <= stoppingZoneEnd) {
+            displayResult('合格');
+        } else if (trainX > stoppingZoneEnd) {
+            displayResult('不合格');
+        }
     }
 };
 
