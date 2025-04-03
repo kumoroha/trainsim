@@ -13,13 +13,13 @@ let trainSpeed = 0; // Train speed in pixels per frame
 let paused = false;
 let inStation = false;
 let trainEntered = false;
-let scaleFactor = 2; // Scale factor for train when it enters the station
+let scaleFactor = 1; // Scale factor for train when it enters the station
 
 const maxAccelerationPerSec = 2.5; // Maximum acceleration in km/h per second
 const maxDecelerationPerSec = -4.6; // Maximum deceleration in km/h per second for B8
 const ebDecelerationPerSec = -5.2; // Emergency brake deceleration in km/h per second
 const updateInterval = 100; // Update interval in milliseconds
-const stationLineX = canvas.width - 150; // Position of the station entry line
+const stationLineX = canvas.width - 20; // Position of the station entry line (20px from the right edge)
 
 const updateDashboard = () => {
     document.getElementById('remaining-time').innerText = Math.floor(remainingTime);
@@ -62,9 +62,10 @@ const updateTrainPosition = () => {
     if (!trainEntered && trainX >= stationLineX) {
         trainEntered = true;
         inStation = true;
-        trainX = stationLineX;
-        speed /= scaleFactor; // Adjust speed for scale
-        trainSpeed /= scaleFactor; // Adjust train speed for scale
+        canvas.width *= 2; // Double the canvas width to simulate zooming in
+        trainX = 0; // Move train to the left edge
+        speed /= 2; // Adjust speed for the new scale
+        trainSpeed /= 2; // Adjust train speed for the new scale
     }
 
     if (trainEntered && trainX >= (canvas.width - 100)) {
