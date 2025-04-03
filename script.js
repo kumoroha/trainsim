@@ -62,10 +62,9 @@ const updateTrainPosition = () => {
     if (!trainEntered && trainX >= stationLineX) {
         trainEntered = true;
         inStation = true;
-        canvas.width *= 2; // Double the canvas width to simulate zooming in
         trainX = 0; // Move train to the left edge
         speed /= 2; // Adjust speed for the new scale
-        trainSpeed /= 2; // Adjust train speed for the new scale
+        canvas.width *= 2; // Double the canvas width to simulate zooming in
     }
 
     if (trainEntered && trainX >= (canvas.width - 100)) {
