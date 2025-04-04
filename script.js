@@ -18,7 +18,7 @@ const updateInterval = 100; // Update interval in milliseconds
 const stoppingLineX = canvas.width - 20; // Position of the stopping line (20px from the right edge)
 const stoppingZoneStart = stoppingLineX - 10; // Start of the stopping zone
 const stoppingZoneEnd = stoppingLineX + 10; // End of the stopping zone
-const pixelsPerKm = canvas.width / 7.7; // Pixels per km based on the canvas width and total distance
+const pixelsPerKm = (stoppingLineX - 100) / 7.7; // Adjusted Pixels per km based on the canvas width and total distance
 
 const updateDashboard = () => {
     document.getElementById('remaining-time').innerText = Math.floor(remainingTime);
@@ -58,12 +58,12 @@ const updateTrainPosition = () => {
     if (remainingDistance < 0) remainingDistance = 0;
 
     // Check if the train reaches the stopping zone
-    if (remainingDistance <= 0) {
-        if (trainX >= stoppingZoneStart && trainX <= stoppingZoneEnd) {
-            displayResult('合格');
-        } else if (trainX > stoppingZoneEnd) {
-            displayResult('不合格');
-        }
+    if (trainX >= stoppingZoneStart && trainX <= stoppingZoneEnd) {
+        remainingDistance = 0.0;
+        displayResult('合格');
+    } else if (trainX > stoppingZoneEnd) {
+        remainingDistance = 0.0;
+        displayResult('不合格');
     }
 };
 
