@@ -57,14 +57,10 @@ const updateTrainPosition = () => {
     if (remainingDistance < 0) remainingDistance = 0;
 
     // Check if the train reaches the stopping zone
-    if (trainX >= stoppingLineX) {
-        if (trainX <= stoppingLineX) {
-            remainingDistance = 0.0;
-            displayResult('合格');
-        } else if (trainX > stoppingLineX) {
-            remainingDistance = 0.0;
-            displayResult('不合格');
-        }
+    if (trainX >= stoppingLineX - 10 && trainX <= stoppingLineX + 10) {
+        displayResult('合格');
+    } else if (trainX > stoppingLineX + 10) {
+        displayResult('不合格');
     }
 };
 
@@ -73,13 +69,20 @@ const drawTrain = () => {
 
     // Draw stopping zone
     ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height); // Use the entire canvas width for the home
+    ctx.fillRect(stoppingLineX - 10, 0, 20, canvas.height);
 
     // Draw stopping line
     ctx.strokeStyle = 'red';
     ctx.beginPath();
     ctx.moveTo(stoppingLineX, 0);
     ctx.lineTo(stoppingLineX, canvas.height);
+    ctx.stroke();
+
+    // Draw home start line
+    ctx.strokeStyle = 'green';
+    ctx.beginPath();
+    ctx.moveTo(homeStartX, 0);
+    ctx.lineTo(homeStartX, canvas.height);
     ctx.stroke();
 
     // Draw train if it is within the home
