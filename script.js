@@ -1,6 +1,6 @@
 let canvas = document.getElementById('train-simulation');
 let ctx = canvas.getContext('2d');
-canvas.width = 1200;
+canvas.width = 1150; // Change canvas width to 1150px
 canvas.height = 300;
 
 let remainingTime = 120; // 2 minutes in seconds
@@ -16,7 +16,7 @@ const maxDecelerationPerSec = -4.6; // Maximum deceleration in km/h per second f
 const ebDecelerationPerSec = -5.2; // Emergency brake deceleration in km/h per second
 const updateInterval = 100; // Update interval in milliseconds
 const stoppingLineX = canvas.width - 20; // Position of the stopping line (20px from the right edge)
-const homeStartX = stoppingLineX - (250 / 1000 * ((stoppingLineX - 100) / 7.7)); // Home start position (250m before stopping line)
+const homeStartX = stoppingLineX - 250; // Home start position (250m before stopping line)
 const pixelsPerMeter = (stoppingLineX - 100) / 7700; // Pixels per meter based on the canvas width and total distance
 
 const updateDashboard = () => {
