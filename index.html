@@ -7,6 +7,14 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div class="route-selector">
+        <label for="route">路線を選択:</label>
+        <select id="route">
+            <option value="osaka_shin_osaka">大阪-新大阪</option>
+            <option value="tokyo_yokohama">東京-横浜</option>
+            <option value="kyoto_osaka">京都-大阪</option>
+        </select>
+    </div>
     <canvas id="train-simulation"></canvas>
     <div class="dashboard">
         <div class="dashboard-item">残り時間: <span id="remaining-time">180</span> 秒</div>
