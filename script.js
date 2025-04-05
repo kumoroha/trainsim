@@ -6,6 +6,7 @@ canvas.height = 300;
 let routes = {
     "osaka_shin_osaka": { distance: 3800, time: 180, maxAccelerationPerSec: 2.5, maxDecelerationPerSec: -4.6, ebDecelerationPerSec: -5.2 },
     "shinagawa_takanawa": { distance: 900, time: 120, maxAccelerationPerSec: 3.0, maxDecelerationPerSec: -3.2, ebDecelerationPerSec: -4.2 },
+    "test_200m": { distance: 200, time: 60, maxAccelerationPerSec: 2.5, maxDecelerationPerSec: -4.6, ebDecelerationPerSec: -5.2 },
 }
 
 let selectedRoute = "osaka_shin_osaka";
@@ -39,11 +40,6 @@ let pixelsPerMeter = (stoppingLineX - 100) / remainingDistance; // Pixels per me
 const updateDashboard = () => {
     const timeDisplay = document.getElementById('remaining-time');
     timeDisplay.innerText = Math.floor(remainingTime);
-    if (remainingTime >= 0) {
-        timeDisplay.style.color = 'lightgreen';
-    } else {
-        timeDisplay.style.color = 'red';
-    }
     document.getElementById('remaining-distance').innerText = remainingDistance.toFixed(0) + ' m';
     document.getElementById('speed').innerText = speed.toFixed(1) + ' km/h';
     document.getElementById('notch').innerText = getNotchDisplay(notch);
@@ -110,6 +106,12 @@ const drawTrain = () => {
 
 const displayResult = (result) => {
     paused = true;
+    const timeDisplay = document.getElementById('remaining-time');
+    if (remainingTime >= 0) {
+        timeDisplay.style.color = 'lightgreen';
+    } else {
+        timeDisplay.style.color = 'red';
+    }
     document.getElementById('result').innerText = result;
     document.getElementById('result').style.display = 'block';
     document.getElementById('retry').style.display = 'block';
