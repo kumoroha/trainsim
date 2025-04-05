@@ -59,8 +59,8 @@ body {
 @media (max-width: 767px) {
     .notch-controls button, .pause-resume button {
         padding: 5px 10px; /* Make buttons smaller for mobile */
-        font-size: 0.9em; /* Adjust font size for mobile */
-        width: 100px; /* Set a uniform width for mobile */
+        font-size: 0.8em; /* Adjust font size for mobile */
+        width: 80px; /* Set a uniform width for mobile */
     }
 }
 
