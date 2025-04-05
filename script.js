@@ -10,7 +10,7 @@ let routes = {
 
 let selectedRoute = "osaka_shin_osaka";
 
-let remainingTime = routes[selectedRoute].time; // 2 minutes in seconds
+let remainingTime = routes[selectedRoute].time; // 3 minutes in seconds
 let remainingDistance = routes[selectedRoute].distance; // in meters
 let speed = 0; // km/h
 let notch = 0; // Notch position
@@ -128,7 +128,16 @@ const update = () => {
         updateDashboard();
         remainingTime -= updateInterval / 1000; // Decrement remaining time
         if (remainingTime < 0) remainingTime = 0;
-        if (trainX >= canvas.width - 100) speed = 0; // Stop train at the end
+        if (trainX >= canvas.width - 100) {
+            speed = 0; // Stop train at the end
+            if (remainingDistance <= 0) {
+                if (trainX >= stoppingLineX - 10 && trainX <= stoppingLineX + 10) {
+                    displayResult('合格');
+                } else {
+                    displayResult('不合格');
+                }
+            }
+        }
     }
     setTimeout(update, updateInterval);
 };
