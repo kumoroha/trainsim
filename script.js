@@ -3,8 +3,8 @@ let ctx = canvas.getContext('2d');
 canvas.width = 1150; // Change canvas width to 1150px
 canvas.height = 300;
 
-let remainingTime = 120; // 2 minutes in seconds
-let remainingDistance = 7700; // in meters
+let remainingTime = 180; // 3 minutes in seconds
+let remainingDistance = 3800; // in meters
 let speed = 0; // km/h
 let notch = 0; // Notch position
 let trainX = 0; // Train position
@@ -16,8 +16,8 @@ const maxDecelerationPerSec = -4.6; // Maximum deceleration in km/h per second f
 const ebDecelerationPerSec = -5.2; // Emergency brake deceleration in km/h per second
 const updateInterval = 100; // Update interval in milliseconds
 const stoppingLineX = canvas.width - 20; // Position of the stopping line (20px from the right edge)
-const homeStartX = stoppingLineX - 250; // Home start position (250m before stopping line)
-const pixelsPerMeter = (stoppingLineX - 100) / 7700; // Pixels per meter based on the canvas width and total distance
+const homeStartX = 0; // Home start position (start of the canvas)
+const pixelsPerMeter = (stoppingLineX - 100) / 3800; // Pixels per meter based on the canvas width and total distance
 
 const updateDashboard = () => {
     document.getElementById('remaining-time').innerText = Math.floor(remainingTime);
@@ -73,20 +73,13 @@ const drawTrain = () => {
 
     // Draw stopping zone
     ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
-    ctx.fillRect(stoppingLineX - 10, 0, 20, canvas.height);
+    ctx.fillRect(0, 0, canvas.width, canvas.height); // Use the entire canvas width for the home
 
     // Draw stopping line
     ctx.strokeStyle = 'red';
     ctx.beginPath();
     ctx.moveTo(stoppingLineX, 0);
     ctx.lineTo(stoppingLineX, canvas.height);
-    ctx.stroke();
-
-    // Draw home start line
-    ctx.strokeStyle = 'green';
-    ctx.beginPath();
-    ctx.moveTo(homeStartX, 0);
-    ctx.lineTo(homeStartX, canvas.height);
     ctx.stroke();
 
     // Draw train if it is within the home
@@ -104,8 +97,8 @@ const displayResult = (result) => {
 };
 
 const resetGame = () => {
-    remainingTime = 120;
-    remainingDistance = 7700;
+    remainingTime = 180;
+    remainingDistance = 3800;
     speed = 0;
     notch = 0;
     trainX = 0;
