@@ -53,7 +53,7 @@ const updateTrainPosition = () => {
     // Convert speed from km/h to pixels/frame
     trainSpeed = (speed / 3.6) * (updateInterval / 1000) * pixelsPerMeter;
     trainX += trainSpeed;
-    remainingDistance -= (speed / 3.6) * (updateInterval / 1000) * 1000; // Convert km/h to meters/sec and then to meters per frame
+    remainingDistance -= (speed * (1000 / 3600)) * (updateInterval / 1000); // Convert speed from km/h to meters per second and adjust for interval
     if (remainingDistance < 0) remainingDistance = 0;
 
     // Check if the train reaches the stopping zone
