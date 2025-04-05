@@ -37,7 +37,13 @@ const homeStartX = 0; // Home start position (start of the canvas)
 let pixelsPerMeter = (stoppingLineX - 100) / remainingDistance; // Pixels per meter based on the canvas width and total distance
 
 const updateDashboard = () => {
-    document.getElementById('remaining-time').innerText = Math.floor(remainingTime);
+    const timeDisplay = document.getElementById('remaining-time');
+    timeDisplay.innerText = Math.floor(remainingTime);
+    if (remainingTime >= 0) {
+        timeDisplay.style.color = 'lightgreen';
+    } else {
+        timeDisplay.style.color = 'red';
+    }
     document.getElementById('remaining-distance').innerText = remainingDistance.toFixed(0) + ' m';
     document.getElementById('speed').innerText = speed.toFixed(1) + ' km/h';
     document.getElementById('notch').innerText = getNotchDisplay(notch);
@@ -130,6 +136,7 @@ const update = () => {
         if (remainingTime < 0) remainingTime = 0;
         if (trainX >= canvas.width - 100) {
             speed = 0; // Stop train at the end
+            paused = true;
             if (remainingDistance <= 0) {
                 if (trainX >= stoppingLineX - 10 && trainX <= stoppingLineX + 10) {
                     displayResult('合格');
