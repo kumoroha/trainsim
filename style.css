@@ -15,6 +15,8 @@ body {
     padding: 10px;
     background-color: #f0f0f0;
     font-size: 1.2em; /* Make font larger */
+    position: absolute;
+    top: 20px; /* Position the dashboard at the top */
 }
 
 .dashboard-item {
@@ -28,14 +30,14 @@ body {
     padding: 10px;
     background-color: #e0e0e0;
     position: absolute;
-    top: 0;
-    right: 0;
+    bottom: 20px; /* Position the controls at the bottom */
 }
 
 .notch-controls {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
+    margin-left: 20px; /* Align notch controls to the left */
 }
 
 .notch-controls button {
@@ -47,6 +49,9 @@ body {
 .pause-resume {
     display: flex;
     align-items: center;
+    position: absolute;
+    top: 20px; /* Position pause-resume controls at the top right */
+    right: 20px;
 }
 
 .pause-resume button {
@@ -58,7 +63,7 @@ body {
 canvas {
     border: 1px solid #000;
     background-color: #fff;
-    margin-top: 20px;
+    margin-top: 80px; /* Adjust canvas position */
     position: relative;
 }
 
