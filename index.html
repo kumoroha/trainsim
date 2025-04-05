@@ -1,38 +1,128 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>電車でGO! シミュレーション</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class="route-selector">
-        <label for="route">路線を選択:</label>
-        <select id="route">
-            <option value="osaka_shin_osaka">大阪-新大阪 225系100番台</option>
-            <option value="shinagawa_takanawa">品川-高輪ゲートウェイ E235系0番台</option>
-        </select>
-    </div>
-    <canvas id="train-simulation"></canvas>
-    <div class="dashboard">
-        <div class="dashboard-item">残り時間: <span id="remaining-time">180</span> 秒</div>
-        <div class="dashboard-item">残り距離: <span id="remaining-distance">3800 m</span></div>
-        <div class="dashboard-item">速度: <span id="speed">0 km/h</span></div>
-        <div class="dashboard-item">ノッチ: <span id="notch">N</span></div>
-    </div>
-    <div class="controls">
-        <div class="notch-controls">
-            <button id="notch-down">ノッチダウン</button>
-            <button id="notch-up">ノッチアップ</button>
-        </div>
-        <div class="pause-resume">
-            <button id="pause">一時停止</button>
-            <button id="resume">再開</button>
-        </div>
-    </div>
-    <div id="result" style="display: none;"></div>
-    <button id="retry" style="display: none;">もう一回する</button>
-    <script src="script.js"></script>
-</body>
-</html>
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden; /* Prevent scrolling */
+    touch-action: manipulation; /* Enhance touch responsiveness */
+}
+
+.route-selector {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.route-selector label {
+    margin-right: 10px;
+    font-size: 1.2em;
+}
+
+.route-selector select {
+    padding: 5px;
+    font-size: 1em;
+}
+
+.dashboard {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    padding: 10px;
+    background-color: #f0f0f0;
+    font-size: 1.2em;
+    position: absolute;
+    top: 50px; /* Adjust position */
+    flex-wrap: wrap; /* Make it responsive */
+}
+
+.dashboard-item {
+    margin: 0 5px;
+}
+
+@media (min-width: 768px) {
+    .dashboard {
+        font-size: 2em; /* Larger font size for desktops */
+    }
+}
+
+.controls {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px;
+    background-color: #e0e0e0;
+    position: absolute;
+    bottom: 20px; /* Position the controls at the bottom */
+    flex-wrap: wrap; /* Make it responsive */
+}
+
+.notch-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-left: 20px; /* Align notch controls to the left */
+}
+
+.notch-controls button {
+    margin: 5px 0;
+    padding: 10px 20px;
+    font-size: 1.1em; /* Make buttons slightly larger */
+}
+
+@media (max-width: 767px) {
+    .notch-controls button, .pause-resume button {
+        padding: 5px 10px; /* Make buttons smaller for mobile */
+        font-size: 0.8em; /* Adjust font size for mobile */
+        width: 80px; /* Set a uniform width for mobile */
+    }
+}
+
+.pause-resume {
+    display: flex;
+    align-items: center;
+    position: absolute;
+    top: 20px; /* Position pause-resume controls at the top right */
+    right: 20px;
+}
+
+.pause-resume button {
+    margin: 0 5px;
+    padding: 10px 20px;
+    font-size: 1.1em; /* Make buttons slightly larger */
+}
+
+canvas {
+    border: 1px solid #000;
+    background-color: #fff;
+    margin-top: 70px; /* Adjust canvas position */
+    margin-bottom: 70px; /* Adjust canvas bottom position */
+    position: relative;
+    width: 100%;
+    max-width: 1150px; /* Ensure it fits on smaller screens */
+    height: auto; /* Maintain aspect ratio */
+}
+
+#entry-message {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 5px;
+    border: 1px solid #000;
+}
+
+#result {
+    margin-top: 20px;
+    font-size: 1.5em;
+}
+
+#retry {
+    margin-top: 10px;
+    padding: 10px 20px;
+    font-size: 1em;
+}
