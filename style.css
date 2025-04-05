@@ -14,9 +14,9 @@ body {
     width: 100%;
     padding: 10px;
     background-color: #f0f0f0;
-    font-size: 1.2em; /* Make font larger */
+    font-size: 1.5em; /* Make font larger */
     position: absolute;
-    top: 80px; /* Adjust position */
+    top: 50px; /* Adjust position */
 }
 
 .dashboard-item {
@@ -63,7 +63,8 @@ body {
 canvas {
     border: 1px solid #000;
     background-color: #fff;
-    margin-top: 20px; /* Adjust canvas position */
+    margin-top: 70px; /* Adjust canvas position */
+    margin-bottom: 70px; /* Adjust canvas bottom position */
     position: relative;
 }
 
