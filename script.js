@@ -78,13 +78,6 @@ const drawTrain = () => {
     ctx.lineTo(stoppingLineX, canvas.height);
     ctx.stroke();
 
-    // Draw home start line
-    ctx.strokeStyle = 'green';
-    ctx.beginPath();
-    ctx.moveTo(homeStartX, 0);
-    ctx.lineTo(homeStartX, canvas.height);
-    ctx.stroke();
-
     // Draw train if it is within the home
     if (trainX >= homeStartX && trainX <= stoppingLineX) {
         ctx.fillStyle = 'blue';
