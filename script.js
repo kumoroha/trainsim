@@ -3,21 +3,29 @@ let ctx = canvas.getContext('2d');
 canvas.width = 1150; // Change canvas width to 1150px
 canvas.height = 300;
 
-let remainingTime = 180; // 3 minutes in seconds
-let remainingDistance = 3800; // in meters
+let routes = {
+    "osaka_shin_osaka": { distance: 3800, time: 180, maxAccelerationPerSec: 2.5, maxDecelerationPerSec: -4.6, ebDecelerationPerSec: -5.2 },
+    "tokyo_yokohama": { distance: 29000, time: 900, maxAccelerationPerSec: 3.0, maxDecelerationPerSec: -5.0, ebDecelerationPerSec: -5.5 },
+    "kyoto_osaka": { distance: 13000, time: 600, maxAccelerationPerSec: 2.8, maxDecelerationPerSec: -4.8, ebDecelerationPerSec: -5.3 },
+}
+
+let selectedRoute = "osaka_shin_osaka";
+
+let remainingTime = routes[selectedRoute].time; // 3 minutes in seconds
+let remainingDistance = routes[selectedRoute].distance; // in meters
 let speed = 0; // km/h
 let notch = 0; // Notch position
 let trainX = 0; // Train position
 let trainSpeed = 0; // Train speed in pixels per frame
 let paused = false;
 
-const maxAccelerationPerSec = 2.5; // Maximum acceleration in km/h per second
-const maxDecelerationPerSec = -4.6; // Maximum deceleration in km/h per second for B8
-const ebDecelerationPerSec = -5.2; // Emergency brake deceleration in km/h per second
+const maxAccelerationPerSec = routes[selectedRoute].maxAccelerationPerSec; // Maximum acceleration in km/h per second
+const maxDecelerationPerSec = routes[selectedRoute].maxDecelerationPerSec; // Maximum deceleration in km/h per second for B8
+const ebDecelerationPerSec = routes[selectedRoute].ebDecelerationPerSec; // Emergency brake deceleration in km/h per second
 const updateInterval = 100; // Update interval in milliseconds
 const stoppingLineX = canvas.width - 20; // Position of the stopping line (20px from the right edge)
 const homeStartX = 0; // Home start position (start of the canvas)
-const pixelsPerMeter = (stoppingLineX - 100) / 3800; // Pixels per meter based on the canvas width and total distance
+const pixelsPerMeter = (stoppingLineX - 100) / remainingDistance; // Pixels per meter based on the canvas width and total distance
 
 const updateDashboard = () => {
     document.getElementById('remaining-time').innerText = Math.floor(remainingTime);
@@ -93,8 +101,8 @@ const displayResult = (result) => {
 };
 
 const resetGame = () => {
-    remainingTime = 180;
-    remainingDistance = 3800;
+    remainingTime = routes[selectedRoute].time;
+    remainingDistance = routes[selectedRoute].distance;
     speed = 0;
     notch = 0;
     trainX = 0;
@@ -134,5 +142,10 @@ document.getElementById('resume').addEventListener('click', () => {
 });
 
 document.getElementById('retry').addEventListener('click', resetGame);
+
+document.getElementById('route').addEventListener('change', (event) => {
+    selectedRoute = event.target.value;
+    resetGame();
+});
 
 update();
