@@ -73,13 +73,14 @@ const updateTrainPosition = () => {
     trainSpeed = (speed / 3.6) * (updateInterval / 1000) * pixelsPerMeter;
     trainX += trainSpeed;
     remainingDistance -= (speed * (1000 / 3600)) * (updateInterval / 1000); // Convert speed from km/h to meters per second and adjust for interval
-    if (remainingDistance < 0) remainingDistance = 0;
 
     // Check if the train reaches the stopping zone
-    if (trainX >= stoppingLineX - 10 && trainX <= stoppingLineX + 10) {
-        displayResult('合格');
-    } else if (trainX > stoppingLineX + 10) {
-        displayResult('不合格');
+    if (remainingDistance <= 0 && speed === 0) {
+        if (trainX >= stoppingLineX - 10 && trainX <= stoppingLineX + 10) {
+            displayResult('合格');
+        } else {
+            displayResult('不合格');
+        }
     }
 };
 
