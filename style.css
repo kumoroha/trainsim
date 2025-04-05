@@ -10,6 +10,24 @@ body {
     touch-action: manipulation; /* Enhance touch responsiveness */
 }
 
+.route-selector {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.route-selector label {
+    margin-right: 10px;
+    font-size: 1.2em;
+}
+
+.route-selector select {
+    padding: 5px;
+    font-size: 1em;
+}
+
 .dashboard {
     display: flex;
     justify-content: space-around;
