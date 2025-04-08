@@ -107,10 +107,15 @@ canvas {
     height: auto; /* Maintain aspect ratio */
 }
 
-.result {
-    position: relative;
-    bottom: 50px;
+.result-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     margin-top: 20px;
+}
+
+.result {
     font-size: 1.5em;
     text-align: center;
     width: 100%;
