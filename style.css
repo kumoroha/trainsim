@@ -107,18 +107,14 @@ canvas {
     height: auto; /* Maintain aspect ratio */
 }
 
-#entry-message {
-    position: absolute;
-    left: 10px;
-    bottom: 10px;
-    background-color: rgba(255, 255, 255, 0.8);
-    padding: 5px;
-    border: 1px solid #000;
-}
-
-#result {
+.result {
+    position: relative;
+    bottom: 50px;
     margin-top: 20px;
     font-size: 1.5em;
+    text-align: center;
+    width: 100%;
+    color: red;
 }
 
 #retry {
