@@ -32,41 +32,40 @@
             width: 100vw;
             display: flex;
             flex-direction: column;
-            /* タッチ操作の挙動を制限（ダブルタップズーム無効化のCSS） */
             touch-action: manipulation;
         }
 
-        /* 1. ユーティリティ（最上部：5vh） */
+        /* 1. ユーティリティ（8vh） */
         .utils {
             height: 8vh;
             display: flex;
             justify-content: flex-end;
             align-items: center;
-            gap: 10px;
-            padding: 0 15px;
+            gap: 15px;
+            padding: 0 20px;
             box-sizing: border-box;
-            background: rgba(255,255,255,0.05);
         }
         .util-btn {
             background: var(--panel-color);
             color: var(--text-color);
             border: 1px solid #555;
-            padding: 8px 12px;
-            border-radius: 5px;
-            font-size: 0.9rem;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 1rem;
         }
 
-        /* 2. 計器表示（中央：42vh） */
+        /* 2. 計器表示（57vhに拡大） */
         .display-container {
-            height: 42vh;
+            height: 57vh;
             display: grid;
-            grid-template-columns: 1fr 1.5fr 1fr;
-            padding: 10px 20px;
+            grid-template-columns: 1fr 1.8fr 1fr;
+            padding: 0 25px;
             box-sizing: border-box;
+            align-items: center;
         }
 
         .info-box { display: flex; flex-direction: column; justify-content: center; }
-        .limit-speed { color: #ff4444; font-size: 3rem; font-weight: bold; }
+        .limit-speed { color: #ff4444; font-size: 4.5rem; font-weight: bold; line-height: 1; }
         
         .center-dash {
             display: flex;
@@ -74,28 +73,29 @@
             align-items: center;
             justify-content: center;
         }
-        .main-speed { font-size: 6rem; font-weight: 800; line-height: 1; }
-        .speed-unit { font-size: 1.2rem; color: #666; }
-        #notch-text { font-size: 2rem; font-weight: bold; height: 2.2rem; }
+        /* 速度計をさらに大きく */
+        .main-speed { font-size: 9rem; font-weight: 800; line-height: 0.9; }
+        .speed-unit { font-size: 1.8rem; color: #666; }
+        #notch-text { font-size: 3rem; font-weight: bold; height: 3.5rem; margin-bottom: 5px; }
 
         .meter-container {
-            width: 90%;
-            height: 18px;
+            width: 95%;
+            height: 25px;
             background: #333;
-            border-radius: 4px;
-            margin-top: 10px;
-            border: 1px solid #555;
+            border-radius: 6px;
+            margin-top: 20px;
+            border: 2px solid #555;
             overflow: hidden;
         }
         #notch-bar { height: 100%; width: 0%; transition: width 0.1s; }
 
-        /* 3. 操作パネル（下部：50vh） */
+        /* 3. 操作パネル（35vhに縮小し、高さを抑える） */
         .control-container {
-            height: 50vh;
+            height: 35vh;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            padding: 10px 20px 40px 20px; /* 下部40pxはiPadホームバー用 */
+            gap: 25px;
+            padding: 10px 25px 35px 25px;
             box-sizing: border-box;
         }
 
@@ -104,27 +104,29 @@
             color: var(--btn-text);
             border: 2px solid #555;
             border-radius: 20px;
-            font-size: 2rem;
+            font-size: 2.2rem;
             font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
-            /* ボタンが大きすぎないように最大高さを制限 */
-            max-height: 200px; 
+            height: 120px; /* ボタンの高さを固定的にして巨大化を防止 */
             align-self: center; 
-            height: 80%;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
         }
+        .notch-btn:active { background: #444; transform: translateY(2px); box-shadow: none; }
 
     </style>
 </head>
-<body ontouchstart=""> <div class="utils">
+<body ontouchstart="">
+
+    <div class="utils">
         <button class="util-btn" onclick="toggleTheme()">Theme</button>
         <button id="pause-btn" class="util-btn" onclick="togglePause()">Pause</button>
     </div>
 
     <div class="display-container">
         <div class="info-box">
-            <span style="font-size:0.8rem; color:#888;">制限</span>
+            <span style="font-size:1.1rem; color:#888; margin-bottom: 5px;">制限</span>
             <span id="limit" class="limit-speed">--</span>
         </div>
 
@@ -136,10 +138,10 @@
             </div>
         </div>
 
-        <div class="info-box" style="text-align:right; line-height: 1.2;">
-            <div style="color:var(--brake-color); font-weight:bold; font-size: 1rem;">9431M エキスポライナー</div>
-            <div id="section-name" style="color:#aaa; font-size: 0.8rem;">大阪 → 西九条</div>
-            <div id="distance" style="font-size: 1.6rem; margin-top:5px; font-weight: bold;">-- km</div>
+        <div class="info-box" style="text-align:right; line-height: 1.4;">
+            <div style="color:var(--brake-color); font-weight:bold; font-size: 1.4rem;">9431M エキスポライナー</div>
+            <div id="section-name" style="color:#aaa; font-size: 1.1rem;">大阪 → 西九条</div>
+            <div id="distance" style="font-size: 2.2rem; margin-top:10px; font-weight: bold;">-- km</div>
         </div>
     </div>
 
@@ -149,7 +151,7 @@
     </div>
 
     <script>
-        // ダブルタップズームをJS側でも徹底防御
+        // 連打対策
         document.addEventListener('touchstart', (e) => {
             if (e.touches.length > 1) e.preventDefault();
         }, { passive: false });
