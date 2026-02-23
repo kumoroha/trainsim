@@ -6,7 +6,6 @@
     <title>Expo Liner Simulator Pro</title>
     <style>
         :root {
-            /* ダークモード（デフォルト） */
             --bg-color: #050505;
             --panel-color: #1a1a1a;
             --text-color: #e0e0e0;
@@ -16,7 +15,6 @@
             --eb-color: #ff0000;
         }
 
-        /* ライトモード用設定 */
         body.light-mode {
             --bg-color: #f0f0f0;
             --panel-color: #ffffff;
@@ -32,14 +30,19 @@
             overflow: hidden;
             user-select: none;
             transition: background-color 0.3s, color 0.3s;
+            /* iPadでの画面全体の高さを固定 */
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         /* 上部エリア */
         .display-container {
             display: grid;
             grid-template-columns: 1fr 2fr 1fr;
-            height: 40vh;
+            height: 45vh;
             padding: 20px;
+            box-sizing: border-box;
         }
 
         .info-box { display: flex; flex-direction: column; justify-content: center; }
@@ -51,7 +54,14 @@
             align-items: center;
             justify-content: center;
         }
+        
+        /* 速度表示：km/hを横に小さく配置 */
+        .speed-display-group {
+            display: flex;
+            align-items: baseline;
+        }
         .main-speed { font-size: 9rem; font-weight: 800; line-height: 1; }
+        .speed-unit { font-size: 1.5rem; color: #666; margin-left: 10px; }
 
         /* メーター */
         .meter-container {
@@ -65,13 +75,14 @@
         }
         #notch-bar { height: 100%; width: 0%; transition: width 0.1s; }
 
-        /* ユーティリティボタン（右上） */
+        /* ユーティリティボタン */
         .utils {
             position: absolute;
             top: 10px;
             right: 10px;
             display: flex;
             gap: 10px;
+            z-index: 100;
         }
         .util-btn {
             background: var(--panel-color);
@@ -79,17 +90,18 @@
             border: 1px solid #555;
             padding: 8px 15px;
             border-radius: 5px;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
         }
 
-        /* 下部：操作エリア */
+        /* 下部：操作エリア（iPad A16等のセーフエリアを考慮した余白） */
         .control-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            height: 55vh; /* 下に余白を作るため調整 */
+            flex-grow: 1; /* 残りのスペースをすべて使う */
             gap: 20px;
-            padding: 20px; /* 四方に均等な余白 */
+            padding: 20px 20px 40px 20px; /* 下部余白(40px)をしっかり確保 */
             box-sizing: border-box;
+            background: rgba(0,0,0,0.1);
         }
 
         .notch-btn {
@@ -100,55 +112,56 @@
             font-size: 2.5rem;
             font-weight: bold;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            width: 100%;
+            height: 100%;
         }
         .notch-btn:active { transform: scale(0.98); background: #444; }
 
         #notch-text {
             text-align: center;
-            font-size: 2rem;
+            font-size: 2.5rem;
             font-weight: bold;
-            height: 2.5rem;
+            margin-bottom: 5px;
         }
     </style>
 </head>
 <body>
 
     <div class="utils">
-        <button class="util-btn" onclick="toggleTheme()">Dark/Light</button>
+        <button class="util-btn" onclick="toggleTheme()">Theme</button>
         <button id="pause-btn" class="util-btn" onclick="togglePause()">Pause</button>
     </div>
 
     <div class="display-container">
         <div class="info-box">
-            <span style="font-size:1rem; color:#888;">制限</span>
+            <span style="font-size:0.9rem; color:#888;">制限</span>
             <span id="limit" class="limit-speed">--</span>
         </div>
 
         <div class="center-dash">
-            <div id="speed" class="main-speed">0</div>
             <div id="notch-text">N</div>
+            <div class="speed-display-group">
+                <div id="speed" class="main-speed">0</div>
+                <div class="speed-unit">km/h</div>
+            </div>
             <div class="meter-container">
                 <div id="notch-bar"></div>
             </div>
         </div>
 
-        <div class="info-box" style="text-align:right;">
-            <div style="color:var(--brake-color); font-weight:bold;">EXPO LINER</div>
-            <div id="distance" style="font-size: 2rem; margin-top:10px;">5.40 km</div>
+        <div class="info-box" style="text-align:right; line-height: 1.4;">
+            <div style="color:var(--brake-color); font-weight:bold; font-size: 1.2rem;">EXPO LINER</div>
+            <div style="color:#aaa; font-size: 0.9rem;">大阪 → 桜島</div>
+            <div id="distance" style="font-size: 2rem; margin-top:15px; font-weight: bold;">5.40 km</div>
         </div>
     </div>
 
     <div class="control-container">
-        <button class="notch-btn" onclick="changeNotch(1)">
-            ▲ ACCEL
-        </button>
-        <button class="notch-btn" onclick="changeNotch(-1)">
-            ▼ BRAKE
-        </button>
+        <button class="notch-btn" onclick="changeNotch(1)">▲ 加速</button>
+        <button class="notch-btn" onclick="changeNotch(-1)">▼ 減速</button>
     </div>
 
     <script>
@@ -165,9 +178,7 @@
         let notch = 0;
         let isPaused = false;
 
-        function toggleTheme() {
-            document.body.classList.toggle('light-mode');
-        }
+        function toggleTheme() { document.body.classList.toggle('light-mode'); }
 
         function togglePause() {
             isPaused = !isPaused;
@@ -224,7 +235,6 @@
             document.getElementById('speed').innerText = Math.floor(speed);
             document.getElementById('distance').innerText = (distance / 1000).toFixed(2) + " km";
 
-            // 制限速度ダミーロジック
             if (distance > 5000) document.getElementById('limit').innerText = "25";
             else if (distance > 4500) document.getElementById('limit').innerText = "45";
             else document.getElementById('limit').innerText = "95";
