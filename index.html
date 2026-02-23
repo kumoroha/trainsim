@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Expo Liner Simulator Pro</title>
     <style>
         :root {
@@ -15,13 +15,6 @@
             --eb-color: #ff0000;
         }
 
-        body.light-mode {
-            --bg-color: #f0f0f0;
-            --panel-color: #ffffff;
-            --text-color: #222222;
-            --btn-text: #222222;
-        }
-
         body {
             margin: 0;
             padding: 0;
@@ -29,77 +22,77 @@
             color: var(--text-color);
             font-family: 'Segoe UI', sans-serif;
             overflow: hidden;
-            height: 100vh;
-            width: 100vw;
+            /* vhを使わず、現在のブラウザの表示領域いっぱいに設定 */
+            height: 100%;
+            position: fixed;
+            width: 100%;
             display: flex;
             flex-direction: column;
             touch-action: manipulation;
         }
 
-        /* 1. ユーティリティ（極限まで高さを圧縮：35px） */
+        /* 1. ユーティリティ（完全に最上部へ固定） */
         .utils {
-            height: 35px;
+            height: 40px;
             display: flex;
             justify-content: flex-end;
             align-items: center;
             gap: 10px;
             padding: 0 15px;
-            flex-shrink: 0; /* 絶対に縮まない */
+            flex-shrink: 0;
         }
         .util-btn {
             background: var(--panel-color);
             color: var(--text-color);
             border: 1px solid #555;
-            padding: 2px 10px;
+            padding: 4px 12px;
             border-radius: 4px;
-            font-size: 0.75rem;
+            font-size: 0.9rem;
         }
 
-        /* 2. 計器表示（可変だが、溢れそうなら自動で縮小する） */
+        /* 2. 計器表示（ここを「伸縮自在」にする） */
         .display-container {
-            flex: 1; /* 画面の残りをすべて使う */
-            display: grid;
-            grid-template-columns: 1fr 1.8fr 1fr;
-            padding: 0 15px;
+            flex: 1; /* 余ったスペースを自動で埋める */
+            display: flex;
+            justify-content: space-around;
             align-items: center;
-            min-height: 0; /* これが重要：中身に合わせて溢れるのを防ぐ */
+            padding: 0 10px;
+            min-height: 0; /* 溢れ防止の魔法のプロパティ */
         }
 
-        .info-box { display: flex; flex-direction: column; justify-content: center; }
-        .limit-speed { color: #ff4444; font-size: 3.5rem; font-weight: bold; line-height: 1; }
+        .info-box { width: 25%; }
+        .limit-speed { color: #ff4444; font-size: 3.5rem; font-weight: bold; line-height: 1; display: block;}
         
         .center-dash {
+            width: 50%;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
         }
 
-        /* ノッチと速度を限界まで近づける */
-        #notch-text { font-size: 2.5rem; font-weight: bold; line-height: 1; margin-bottom: 0px; }
-        .main-speed { font-size: 8rem; font-weight: 800; line-height: 0.8; }
+        #notch-text { font-size: 3rem; font-weight: bold; line-height: 1; }
+        .main-speed { font-size: 8.5rem; font-weight: 800; line-height: 0.85; margin: 5px 0; }
         .speed-unit { font-size: 1.5rem; color: #666; }
 
         .meter-container {
-            width: 80%;
-            height: 15px;
+            width: 90%;
+            height: 20px;
             background: #333;
             border-radius: 4px;
-            margin-top: 10px;
             border: 1px solid #555;
             overflow: hidden;
         }
         #notch-bar { height: 100%; width: 0%; transition: width 0.1s; }
 
-        /* 3. 操作パネル（高さを35%に抑え、絶対に画面内に収める） */
+        /* 3. 操作パネル（高さを固定し、絶対に底から浮かさない） */
         .control-container {
-            height: 35vh;
+            height: 240px; /* 高さをピクセルで固定 */
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
-            padding: 0 20px 25px 20px; /* 下部余白をiPad用に確保 */
+            padding: 0 15px 30px 15px;
             box-sizing: border-box;
-            flex-shrink: 0;
+            flex-shrink: 0; /* 画面が狭くても絶対に縮まない */
         }
 
         .notch-btn {
@@ -107,12 +100,12 @@
             color: var(--btn-text);
             border: 2px solid #555;
             border-radius: 15px;
-            font-size: 2.2rem;
+            font-size: 2.5rem;
             font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 90%; 
+            height: 100%;
             box-shadow: 0 4px 8px rgba(0,0,0,0.5);
         }
         .notch-btn:active { background: #555; transform: scale(0.96); }
@@ -128,22 +121,22 @@
 
     <div class="display-container">
         <div class="info-box">
-            <span style="font-size:0.9rem; color:#888;">制限</span>
+            <span style="font-size:0.9rem; color:#888;">制限</span><br>
             <span id="limit" class="limit-speed">--</span>
         </div>
 
         <div class="center-dash">
             <div id="notch-text">N</div>
-            <div class="main-speed"><span id="speed">0</span><span class="speed-unit"> km/h</span></div>
+            <div class="main-speed"><span id="speed">0</span><span class="speed-unit">km/h</span></div>
             <div class="meter-container">
                 <div id="notch-bar"></div>
             </div>
         </div>
 
-        <div class="info-box" style="text-align:right; line-height: 1.2;">
-            <div style="color:var(--brake-color); font-weight:bold; font-size: 1.1rem;">9431M エキスポライナー</div>
-            <div id="section-name" style="color:#aaa; font-size: 0.9rem;">大阪 → 西九条</div>
-            <div id="distance" style="font-size: 1.8rem; margin-top:5px; font-weight: bold;">-- m</div>
+        <div class="info-box" style="text-align:right;">
+            <div style="color:var(--brake-color); font-weight:bold; font-size: 1.1rem;">9431M Expo Liner</div>
+            <div id="section-name" style="color:#aaa; font-size: 0.9rem;">Osaka → Nishi-Kujo</div>
+            <div id="distance" style="font-size: 2rem; margin-top:5px; font-weight: bold;">-- m</div>
         </div>
     </div>
 
@@ -153,6 +146,7 @@
     </div>
 
     <script>
+        // ダブルタップズーム禁止（iPad用）
         document.addEventListener('touchstart', (e) => {
             if (e.touches.length > 1) e.preventDefault();
         }, { passive: false });
