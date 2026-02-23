@@ -32,6 +32,7 @@
             width: 100vw;
             display: flex;
             flex-direction: column;
+            /* ズームを防ぎつつ、タップの反応を最速にする設定 */
             touch-action: manipulation;
         }
 
@@ -54,9 +55,9 @@
             font-size: 1rem;
         }
 
-        /* 2. 計器表示（57vhに拡大） */
+        /* 2. 計器表示（47vh） */
         .display-container {
-            height: 57vh;
+            height: 47vh;
             display: grid;
             grid-template-columns: 1fr 1.8fr 1fr;
             padding: 0 25px;
@@ -73,29 +74,35 @@
             align-items: center;
             justify-content: center;
         }
-        /* 速度計をさらに大きく */
-        .main-speed { font-size: 9rem; font-weight: 800; line-height: 0.9; }
+
+        /* ノッチと速度の間隔を空ける */
+        #notch-text { 
+            font-size: 3rem; 
+            font-weight: bold; 
+            margin-bottom: 25px; /* ここで速度との間隔を確保 */
+        }
+        
+        .main-speed { font-size: 9rem; font-weight: 800; line-height: 0.8; }
         .speed-unit { font-size: 1.8rem; color: #666; }
-        #notch-text { font-size: 3rem; font-weight: bold; height: 3.5rem; margin-bottom: 5px; }
 
         .meter-container {
             width: 95%;
             height: 25px;
             background: #333;
             border-radius: 6px;
-            margin-top: 20px;
+            margin-top: 30px;
             border: 2px solid #555;
             overflow: hidden;
         }
         #notch-bar { height: 100%; width: 0%; transition: width 0.1s; }
 
-        /* 3. 操作パネル（35vhに縮小し、高さを抑える） */
+        /* 3. 操作パネル（45vh：ボタンの高さを復活） */
         .control-container {
-            height: 35vh;
+            height: 45vh;
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 25px;
-            padding: 10px 25px 35px 25px;
+            padding: 10px 25px 45px 25px;
             box-sizing: border-box;
         }
 
@@ -103,17 +110,17 @@
             background: var(--panel-color);
             color: var(--btn-text);
             border: 2px solid #555;
-            border-radius: 20px;
-            font-size: 2.2rem;
+            border-radius: 25px;
+            font-size: 2.5rem;
             font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 120px; /* ボタンの高さを固定的にして巨大化を防止 */
-            align-self: center; 
-            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+            height: 100%; /* エリア内で最大化 */
+            box-shadow: 0 6px 15px rgba(0,0,0,0.5);
         }
-        .notch-btn:active { background: #444; transform: translateY(2px); box-shadow: none; }
+        /* アクティブ時の色変化を分かりやすく */
+        .notch-btn:active { background: #555; transform: scale(0.98); box-shadow: none; }
 
     </style>
 </head>
@@ -151,17 +158,10 @@
     </div>
 
     <script>
-        // 連打対策
+        // ピンチズーム（二本指）のみ禁止し、シングルタップの連打は許可
         document.addEventListener('touchstart', (e) => {
             if (e.touches.length > 1) e.preventDefault();
         }, { passive: false });
-        
-        let lastTouchEnd = 0;
-        document.addEventListener('touchend', (e) => {
-            const now = (new Date()).getTime();
-            if (now - lastTouchEnd <= 300) e.preventDefault();
-            lastTouchEnd = now;
-        }, false);
 
         const PARAMS = { accel_power: 0.04, brake_power: 0.07, eb_power: 0.25, friction: 0.003, refresh_ms: 50 };
         const STATIONS = [
