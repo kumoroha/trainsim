@@ -27,26 +27,41 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             font-family: 'Segoe UI', sans-serif;
-            overflow: hidden;
-            user-select: none;
-            transition: background-color 0.3s, color 0.3s;
-            /* iPadでの画面全体の高さを固定 */
+            overflow: hidden; /* スクロール禁止 */
             height: 100vh;
             display: flex;
             flex-direction: column;
+            transition: background-color 0.3s, color 0.3s;
         }
 
-        /* 上部エリア */
+        /* ユーティリティボタン：絶対配置から通常の流れに変更して隠れるのを防止 */
+        .utils {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 10px;
+            height: 40px;
+        }
+        .util-btn {
+            background: var(--panel-color);
+            color: var(--text-color);
+            border: 1px solid #555;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+        }
+
+        /* 上部計器エリア：高さを少し抑える */
         .display-container {
             display: grid;
             grid-template-columns: 1fr 2fr 1fr;
-            height: 45vh;
-            padding: 20px;
+            flex: 0 0 35%; /* 画面の35%を占有 */
+            padding: 10px 20px;
             box-sizing: border-box;
         }
 
         .info-box { display: flex; flex-direction: column; justify-content: center; }
-        .limit-speed { color: #ff4444; font-size: 4rem; font-weight: bold; }
+        .limit-speed { color: #ff4444; font-size: 3.5rem; font-weight: bold; line-height: 1; }
         
         .center-dash {
             display: flex;
@@ -55,77 +70,48 @@
             justify-content: center;
         }
         
-        /* 速度表示：km/hを横に小さく配置 */
-        .speed-display-group {
-            display: flex;
-            align-items: baseline;
-        }
-        .main-speed { font-size: 9rem; font-weight: 800; line-height: 1; }
-        .speed-unit { font-size: 1.5rem; color: #666; margin-left: 10px; }
+        .speed-display-group { display: flex; align-items: baseline; }
+        .main-speed { font-size: 7rem; font-weight: 800; line-height: 1; }
+        .speed-unit { font-size: 1.2rem; color: #666; margin-left: 8px; }
 
-        /* メーター */
+        #notch-text { font-size: 2rem; font-weight: bold; margin-bottom: 2px; height: 2.2rem; }
+
         .meter-container {
-            width: 80%;
-            height: 25px;
+            width: 90%;
+            height: 20px;
             background: #333;
-            border-radius: 5px;
-            margin-top: 15px;
+            border-radius: 4px;
+            margin-top: 10px;
             overflow: hidden;
             border: 1px solid #555;
         }
         #notch-bar { height: 100%; width: 0%; transition: width 0.1s; }
 
-        /* ユーティリティボタン */
-        .utils {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            display: flex;
-            gap: 10px;
-            z-index: 100;
-        }
-        .util-btn {
-            background: var(--panel-color);
-            color: var(--text-color);
-            border: 1px solid #555;
-            padding: 8px 15px;
-            border-radius: 5px;
-            font-size: 0.8rem;
-        }
-
-        /* 下部：操作エリア（iPad A16等のセーフエリアを考慮した余白） */
+        /* 下部：操作エリア */
         .control-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            flex-grow: 1; /* 残りのスペースをすべて使う */
-            gap: 20px;
-            padding: 20px 20px 40px 20px; /* 下部余白(40px)をしっかり確保 */
+            flex: 1; /* 残りのスペースをすべて使う */
+            gap: 15px;
+            padding: 10px 20px 30px 20px; /* 下部余白を適切に確保 */
             box-sizing: border-box;
-            background: rgba(0,0,0,0.1);
         }
 
         .notch-btn {
             background: var(--panel-color);
             color: var(--btn-text);
             border: 2px solid #555;
-            border-radius: 25px;
-            font-size: 2.5rem;
+            border-radius: 20px;
+            font-size: 2.2rem;
             font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            width: 100%;
-            height: 100%;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            height: 100%; /* 親要素内で最大化 */
         }
-        .notch-btn:active { transform: scale(0.98); background: #444; }
+        .notch-btn:active { transform: scale(0.97); background: #444; }
 
-        #notch-text {
-            text-align: center;
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
     </style>
 </head>
 <body>
@@ -137,7 +123,7 @@
 
     <div class="display-container">
         <div class="info-box">
-            <span style="font-size:0.9rem; color:#888;">制限</span>
+            <span style="font-size:0.8rem; color:#888;">制限</span>
             <span id="limit" class="limit-speed">--</span>
         </div>
 
@@ -152,10 +138,10 @@
             </div>
         </div>
 
-        <div class="info-box" style="text-align:right; line-height: 1.4;">
-            <div style="color:var(--brake-color); font-weight:bold; font-size: 1.2rem;">EXPO LINER</div>
-            <div style="color:#aaa; font-size: 0.9rem;">大阪 → 桜島</div>
-            <div id="distance" style="font-size: 2rem; margin-top:15px; font-weight: bold;">5.40 km</div>
+        <div class="info-box" style="text-align:right; line-height: 1.3;">
+            <div style="color:var(--brake-color); font-weight:bold; font-size: 1.1rem;">9431M エキスポライナー</div>
+            <div id="section-name" style="color:#aaa; font-size: 0.8rem;">大阪 → 西九条</div>
+            <div id="distance" style="font-size: 1.8rem; margin-top:10px; font-weight: bold;">-- km</div>
         </div>
     </div>
 
@@ -173,13 +159,21 @@
             refresh_ms: 50
         };
 
+        const STATIONS = [
+            { name: "大阪", dist: 0 },
+            { name: "西九条", dist: 3800 },
+            { name: "安治川口", dist: 5400 },
+            { name: "ユニバーサルシティ", dist: 6600 },
+            { name: "桜島", dist: 7800 }
+        ];
+
         let speed = 0;
-        let distance = 5400;
+        let currentPos = 0;
         let notch = 0;
         let isPaused = false;
+        let nextStationIdx = 1;
 
         function toggleTheme() { document.body.classList.toggle('light-mode'); }
-
         function togglePause() {
             isPaused = !isPaused;
             document.getElementById('pause-btn').innerText = isPaused ? 'Resume' : 'Pause';
@@ -197,7 +191,6 @@
         function updateUI() {
             const bar = document.getElementById('notch-bar');
             const txt = document.getElementById('notch-text');
-            
             if (notch > 0) {
                 bar.style.width = (notch / 5) * 100 + "%";
                 bar.style.backgroundColor = "var(--accel-color)";
@@ -219,24 +212,36 @@
         setInterval(() => {
             if (isPaused) return;
 
-            if (notch > 0) {
-                speed += notch * PARAMS.accel_power;
-            } else if (notch < 0) {
+            if (notch > 0) speed += notch * PARAMS.accel_power;
+            else if (notch < 0) {
                 let power = (notch === -9) ? PARAMS.eb_power : PARAMS.brake_power;
                 speed += notch * power;
             }
-            
             speed -= PARAMS.friction;
             if (speed < 0) speed = 0;
 
-            distance -= (speed / 3.6) * (PARAMS.refresh_ms / 1000);
-            if (distance < 0) distance = 0;
+            currentPos += (speed / 3.6) * (PARAMS.refresh_ms / 1000);
+            
+            let nextStation = STATIONS[nextStationIdx];
+            let distToNext = nextStation.dist - currentPos;
+
+            if (distToNext < 0) {
+                if (nextStationIdx < STATIONS.length - 1) {
+                    nextStationIdx++;
+                    nextStation = STATIONS[nextStationIdx];
+                    distToNext = nextStation.dist - currentPos;
+                } else {
+                    distToNext = 0;
+                    speed = 0;
+                }
+            }
 
             document.getElementById('speed').innerText = Math.floor(speed);
-            document.getElementById('distance').innerText = (distance / 1000).toFixed(2) + " km";
+            document.getElementById('distance').innerText = (distToNext / 1000).toFixed(2) + " km";
+            document.getElementById('section-name').innerText = STATIONS[nextStationIdx-1].name + " → " + nextStation.name;
 
-            if (distance > 5000) document.getElementById('limit').innerText = "25";
-            else if (distance > 4500) document.getElementById('limit').innerText = "45";
+            if (distToNext < 300) document.getElementById('limit').innerText = "25";
+            else if (distToNext < 800) document.getElementById('limit').innerText = "45";
             else document.getElementById('limit').innerText = "95";
 
         }, PARAMS.refresh_ms);
