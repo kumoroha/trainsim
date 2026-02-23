@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Expo Liner Simulator Pro</title>
     <style>
         :root {
@@ -30,43 +30,40 @@
             overflow: hidden;
             height: 100vh;
             width: 100vw;
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            /* 画面を3つのエリアに厳格に分割 */
+            grid-template-rows: 50px 1fr 280px; 
             touch-action: manipulation;
         }
 
-        /* 1. ユーティリティ（40px：さらに低くして計器の場所を確保） */
+        /* 1. ユーティリティ（50px固定） */
         .utils {
-            height: 40px;
             display: flex;
             justify-content: flex-end;
             align-items: center;
             gap: 15px;
             padding: 0 20px;
-            flex-shrink: 0;
+            background: rgba(255,255,255,0.03);
         }
         .util-btn {
             background: var(--panel-color);
             color: var(--text-color);
             border: 1px solid #555;
-            padding: 2px 10px;
-            border-radius: 4px;
-            font-size: 0.8rem;
+            padding: 5px 12px;
+            border-radius: 6px;
         }
 
-        /* 2. 計器表示（余白を詰め、中央に寄せる） */
+        /* 2. 計器表示（残りの全可変スペース） */
         .display-container {
-            flex: 1;
             display: grid;
             grid-template-columns: 1fr 2fr 1fr;
             padding: 0 20px;
-            box-sizing: border-box;
-            align-items: center; /* 垂直中央 */
+            align-items: center; /* 垂直方向の中央 */
             min-height: 0;
         }
 
         .info-box { display: flex; flex-direction: column; justify-content: center; }
-        .limit-speed { color: #ff4444; font-size: 3.5rem; font-weight: bold; line-height: 1; }
+        .limit-speed { color: #ff4444; font-size: 4rem; font-weight: bold; line-height: 1; }
         
         .center-dash {
             display: flex;
@@ -75,53 +72,46 @@
             justify-content: center;
         }
 
-        /* 速度とノッチの間隔を最小限に */
-        #notch-text { 
-            font-size: 2.2rem; 
-            font-weight: bold; 
-            margin-bottom: 5px; /* 空白を詰める */
-        }
-        
-        .main-speed { font-size: 7.5rem; font-weight: 800; line-height: 0.8; }
-        .speed-unit { font-size: 1.4rem; color: #666; }
+        /* 文字サイズを大きく維持しつつ、余白を削る */
+        #notch-text { font-size: 3rem; font-weight: bold; line-height: 1; margin-bottom: 5px; }
+        .main-speed { font-size: 9rem; font-weight: 800; line-height: 0.8; }
+        .speed-unit { font-size: 1.8rem; color: #666; }
 
         .meter-container {
             width: 90%;
-            height: 16px;
+            height: 20px;
             background: #333;
-            border-radius: 4px;
-            margin-top: 15px; /* 空白を詰める */
-            border: 1px solid #555;
+            border-radius: 6px;
+            margin-top: 15px;
+            border: 2px solid #555;
             overflow: hidden;
         }
         #notch-bar { height: 100%; width: 0%; transition: width 0.1s; }
 
-        /* 3. 操作パネル（高さをpxで固定：iPadの画面下部に収まるように） */
+        /* 3. 操作パネル（280px固定：下端から浮かせない） */
         .control-container {
-            height: 280px; /* vhではなく固定pxにすることで溢れを防止 */
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            padding: 10px 20px 40px 20px; /* 下部余白は維持 */
+            gap: 20px;
+            padding: 0 20px 40px 20px; /* 下部40pxはiPadホームバー用 */
             box-sizing: border-box;
-            flex-shrink: 0;
-            background: rgba(255,255,255,0.02);
         }
 
         .notch-btn {
             background: var(--panel-color);
             color: var(--btn-text);
             border: 2px solid #555;
-            border-radius: 15px;
-            font-size: 2rem;
+            border-radius: 20px;
+            font-size: 2.5rem;
             font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100%;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            height: 200px; /* ボタンの高さをしっかり確保 */
+            align-self: start;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
-        .notch-btn:active { background: #555; transform: scale(0.96); }
+        .notch-btn:active { background: #555; transform: scale(0.97); }
 
     </style>
 </head>
@@ -134,7 +124,7 @@
 
     <div class="display-container">
         <div class="info-box">
-            <span style="font-size:0.8rem; color:#888;">制限</span>
+            <span style="font-size:1.1rem; color:#888;">制限</span>
             <span id="limit" class="limit-speed">--</span>
         </div>
 
@@ -146,10 +136,10 @@
             </div>
         </div>
 
-        <div class="info-box" style="text-align:right; line-height: 1.2;">
-            <div style="color:var(--brake-color); font-weight:bold; font-size: 1.1rem;">9431M エキスポライナー</div>
-            <div id="section-name" style="color:#aaa; font-size: 0.9rem;">大阪 → 西九条</div>
-            <div id="distance" style="font-size: 1.8rem; margin-top:5px; font-weight: bold;">-- m</div>
+        <div class="info-box" style="text-align:right; line-height: 1.4;">
+            <div style="color:var(--brake-color); font-weight:bold; font-size: 1.3rem;">9431M エキスポライナー</div>
+            <div id="section-name" style="color:#aaa; font-size: 1.1rem;">大阪 → 西九条</div>
+            <div id="distance" style="font-size: 2.2rem; margin-top:10px; font-weight: bold;">-- m</div>
         </div>
     </div>
 
@@ -216,7 +206,6 @@
             speed -= PARAMS.friction;
             if (speed < 0) speed = 0;
             currentPos += (speed / 3.6) * (PARAMS.refresh_ms / 1000);
-            
             let nextStation = STATIONS[nextStationIdx], distToNext = nextStation.dist - currentPos;
             if (distToNext < 0) {
                 if (nextStationIdx < STATIONS.length - 1) {
@@ -225,16 +214,13 @@
                     distToNext = nextStation.dist - currentPos;
                 } else { distToNext = 0; speed = 0; }
             }
-            
             document.getElementById('speed').innerText = Math.floor(speed);
             document.getElementById('distance').innerText = Math.floor(distToNext) + " m";
             document.getElementById('section-name').innerText = STATIONS[nextStationIdx-1].name + " → " + nextStation.name;
-            
             if (distToNext < 300) document.getElementById('limit').innerText = "25";
             else if (distToNext < 800) document.getElementById('limit').innerText = "45";
             else document.getElementById('limit').innerText = "95";
         }, PARAMS.refresh_ms);
-
         updateUI();
     </script>
 </body>
