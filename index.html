@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Expo Liner Simulator Pro</title>
+    <style>
+        :root {
+            --bg-color: #050505;
+            --panel-color: #1a1a1a;
+            --text-color: #e0e0e0;
+            --accel-color: #00ff66; /* 加速：緑 */
+            --brake-color: #ffaa00; /* ブレーキ：橙 */
+            --eb-color: #ff0000;    /* 非常：赤 */
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* 上部：計器表示エリア */
+        .display-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            height: 45vh;
+            padding: 20px;
+            background: linear-gradient(180deg, #111 0%, #000 100%);
+        }
+
+        .info-box { display: flex; flex-direction: column; justify-content: center; }
+        .limit-speed { color: #ff4444; font-size: 4rem; font-weight: bold; }
+        .limit-label { font-size: 1rem; color: #888; }
+
+        /* 速度表示とメーター */
+        .center-dash {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .main-speed { font-size: 10rem; font-weight: 800; line-height: 1; margin-bottom: 20px; }
+        .speed-unit { font-size: 1.5rem; color: #666; }
+
+        /* ノッチメーター（光るバー） */
+        .meter-container {
+            width: 80%;
+            height: 30px;
+            background: #222;
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid #444;
+        }
+        #notch-bar {
+            height: 100%;
+            width: 0%;
+            transition: width 0.1s, background-color 0.2s;
+            box-shadow: 0 0 15px rgba(255,255,255,0.2);
+        }
+
+        .route-info { text-align: right; font-size: 1.2rem; line-height: 1.6; color: #ccc; }
+
+        /* 下部：操作エリア */
+        .control-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            height: 55vh;
+            gap: 15px;
+            padding: 15px;
+            background: #000;
+        }
+
+        .notch-btn {
+            background: var(--panel-color);
+            color: white;
+            border: 1px solid #333;
+            border-radius: 20px;
+            font-size: 3rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 5px 15px rgba(255,255,255,0.05);
+        }
+        .notch-btn:active { background: #333; filter: brightness(1.2); }
+        .btn-sub { font-size: 1rem; color: #888; margin-top: 10px; }
+
+        #notch-text {
+            position: absolute;
+            top: 40vh;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2.5rem;
+            font-weight: bold;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="display-container">
+        <div class="info-box">
+            <span class="limit-label">制限</span>
+            <span id="limit" class="limit-speed">--</span>
+        </div>
+
+        <div class="center-dash">
+            <div id="speed" class="main-speed">0</div>
+            <div class="speed-unit">km/h</div>
+            <div class="meter-container">
+                <div id="notch-bar"></div>
+            </div>
+        </div>
+
+        <div class="info-box route-info">
+            <div style="color:var(--brake-color)">EXPO LINER</div>
+            <div>大阪 → 桜島</div>
+            <div style="font-size: 2rem;"><span id="distance">5.40</span><span style="font-size:0.8rem">km</span></div>
+        </div>
+    </div>
+
+    <div id="notch-text">N</div>
+
+    <div class="control-container">
+        <div class="notch-btn" onclick="changeNotch(1)">
+            ▲ ACCEL
+            <span class="btn-sub">P1 - P5</span>
+        </div>
+        <div class="notch-btn" onclick="changeNotch(-1)">
+            ▼ BRAKE
+            <span class="btn-sub">B1 - B8 / EB</span>
+        </div>
+    </div>
+
+    <script>
+        // --- 物理パラメータ（ここをいじって調整！） ---
+        const PARAMS = {
+            accel_power: 0.04,    // 加速の強さ
+            brake_power: 0.07,    // ブレーキの強さ
+            eb_power: 0.25,       // 非常ブレーキの強さ
+            friction: 0.003,      // 転がり抵抗（自然減速）
+            refresh_ms: 50        // 更新頻度
+        };
+
+        let speed = 0;
+        let distance = 5400; // メートル
+        let notch = 0;       // 5(P5) 〜 0(N) 〜 -8(B8) 〜 -9(EB)
+
+        function changeNotch(val) {
+            notch += val;
+            if (notch > 5) notch = 5;
+            if (notch < -9) notch = -9; // -9をEBとする
+            updateUI();
+        }
+
+        function updateUI() {
+            const bar = document.getElementById('notch-bar');
+            const txt = document.getElementById('notch-text');
+            
+            if (notch > 0) {
+                // 加速
+                let percent = (notch / 5) * 100;
+                bar.style.width = percent + "%";
+                bar.style.backgroundColor = "var(--accel-color)";
+                txt.innerText = "P" + notch;
+                txt.style.color = "var(--accel-color)";
+            } else if (notch < 0) {
+                // ブレーキ
+                let isEB = (notch === -9);
+                let percent = (Math.abs(notch) / 9) * 100;
+                bar.style.width = percent + "%";
+                bar.style.backgroundColor = isEB ? "var(--eb-color)" : "var(--brake-color)";
+                txt.innerText = isEB ? "EB" : "B" + Math.abs(notch);
+                txt.style.color = isEB ? "var(--eb-color)" : "var(--brake-color)";
+            } else {
+                // 中立
+                bar.style.width = "0%";
+                txt.innerText = "N";
+                txt.style.color = "white";
+            }
+        }
+
+        setInterval(() => {
+            // 速度計算
+            if (notch > 0) {
+                speed += notch * PARAMS.accel_power;
+            } else if (notch < 0) {
+                let power = (notch === -9) ? PARAMS.eb_power : PARAMS.brake_power;
+                speed += notch * power; // notchがマイナスなので減速
+            }
+            
+            speed -= PARAMS.friction;
+            if (speed < 0) speed = 0;
+
+            // 距離計算
+            distance -= (speed / 3.6) * (PARAMS.refresh_ms / 1000);
+            if (distance < 0) distance = 0;
+
+            // 画面更新
+            document.getElementById('speed').innerText = Math.floor(speed);
+            document.getElementById('distance').innerText = (distance / 1000).toFixed(2);
+
+            // 簡易制限速度ロジック（大阪駅地下ホーム〜地上付近をイメージ）
+            if (distance > 5200) document.getElementById('limit').innerText = "25";
+            else if (distance > 4800) document.getElementById('limit').innerText = "45";
+            else document.getElementById('limit').innerText = "95";
+
+        }, PARAMS.refresh_ms);
+
+        updateUI(); // 初回表示
+    </script>
+</body>
+</html>
