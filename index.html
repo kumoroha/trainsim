@@ -15,7 +15,6 @@
             --eb-color: #ff0000;
         }
 
-        /* 明示的にlight-modeの時の背景と文字色を指定 */
         body.light-mode {
             --bg-color: #f0f0f0;
             --panel-color: #ffffff;
@@ -37,33 +36,31 @@
             touch-action: manipulation;
         }
 
-        /* 1. ユーティリティ（確実にクリックできるようz-indexを指定） */
+        /* 1. ユーティリティ（さらに低く：40px） */
         .utils {
-            height: 45px;
+            height: 40px;
             display: flex;
             justify-content: flex-end;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             padding: 0 15px;
             flex-shrink: 0;
-            z-index: 100;
         }
         .util-btn {
             background: var(--panel-color);
             color: var(--text-color);
-            border: 2px solid #555;
-            padding: 5px 15px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            cursor: pointer;
+            border: 1px solid #555;
+            padding: 2px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
         }
 
-        /* 2. 計器表示（隙間を調整） */
+        /* 2. 計器表示（ここをさらに圧縮しつつ、中央に配置） */
         .display-container {
             flex: 1;
             display: grid;
-            grid-template-columns: 1fr 1.8fr 1fr;
-            padding: 10px 15px;
+            grid-template-columns: 1fr 2fr 1fr;
+            padding: 0 10px;
             align-items: center;
             min-height: 0;
         }
@@ -71,44 +68,37 @@
         .info-box { display: flex; flex-direction: column; justify-content: center; }
         .limit-speed { color: #ff4444; font-size: 3.5rem; font-weight: bold; line-height: 1; }
         
+        /* 中央計器のパーツ間隔を margin ではなく gap で厳密に管理 */
         .center-dash {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            gap: 10px; /* ここだけでパーツ間の距離を離す */
         }
 
-        /* 各パーツの距離を離す調整 */
-        #notch-text { 
-            font-size: 2.8rem; 
-            font-weight: bold; 
-            margin-bottom: 15px; /* ノッチと速度の間隔 */
-        }
-        .main-speed { 
-            font-size: 8rem; 
-            font-weight: 800; 
-            line-height: 0.8;
-        }
-        .speed-unit { font-size: 1.5rem; color: #666; }
+        #notch-text { font-size: 2.5rem; font-weight: bold; line-height: 1; margin: 0; }
+        .main-speed { font-size: 7.5rem; font-weight: 800; line-height: 0.8; margin: 0; }
+        .speed-unit { font-size: 1.4rem; color: #666; }
 
         .meter-container {
             width: 90%;
-            height: 20px;
+            height: 16px;
             background: #333;
             border-radius: 4px;
-            margin-top: 25px; /* 速度とバーの間隔 */
             border: 2px solid #555;
             overflow: hidden;
+            margin: 0;
         }
         #notch-bar { height: 100%; width: 0%; transition: width 0.1s; }
 
-        /* 3. 操作パネル（絶対溢れない高さ設定） */
+        /* 3. 操作パネル（高さを32vhに固定して、絶対に溢れさせない） */
         .control-container {
-            height: 250px;
+            height: 32vh; 
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            padding: 0 20px 40px 20px;
+            gap: 15px;
+            padding: 0 15px 25px 15px;
             box-sizing: border-box;
             flex-shrink: 0;
         }
@@ -117,20 +107,20 @@
             background: var(--panel-color);
             color: var(--btn-text);
             border: 2px solid #555;
-            border-radius: 20px;
-            font-size: 2.4rem;
+            border-radius: 15px;
+            font-size: 2.2rem;
             font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
             height: 100%;
-            box-shadow: 0 5px 10px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
         }
-        .notch-btn:active { background: #555; transform: scale(0.97); }
+        .notch-btn:active { background: #555; transform: scale(0.96); }
 
     </style>
 </head>
-<body>
+<body ontouchstart="">
 
     <div class="utils">
         <button class="util-btn" onpointerdown="toggleTheme()">Theme</button>
@@ -139,7 +129,7 @@
 
     <div class="display-container">
         <div class="info-box">
-            <span style="font-size:1rem; color:#888;">制限</span><br>
+            <span style="font-size:0.8rem; color:#888;">制限</span><br>
             <span id="limit" class="limit-speed">--</span>
         </div>
 
@@ -151,10 +141,10 @@
             </div>
         </div>
 
-        <div class="info-box" style="text-align:right;">
-            <div style="color:var(--brake-color); font-weight:bold; font-size: 1.2rem;">9431M Expo Liner</div>
-            <div id="section-name" style="color:#aaa; font-size: 1rem;">Osaka → Nishi-Kujo</div>
-            <div id="distance" style="font-size: 2rem; margin-top:10px; font-weight: bold;">-- m</div>
+        <div class="info-box" style="text-align:right; line-height: 1.2;">
+            <div style="color:var(--brake-color); font-weight:bold; font-size: 1.1rem;">9431M Expo Liner</div>
+            <div id="section-name" style="color:#aaa; font-size: 0.9rem;">Osaka → Nishi-Kujo</div>
+            <div id="distance" style="font-size: 1.8rem; margin-top:5px; font-weight: bold;">-- m</div>
         </div>
     </div>
 
@@ -164,7 +154,6 @@
     </div>
 
     <script>
-        // タッチ操作の遅延をなくし、かつ誤ズームを防ぐ
         document.addEventListener('touchstart', (e) => {
             if (e.touches.length > 1) e.preventDefault();
         }, { passive: false });
@@ -180,15 +169,12 @@
 
         let speed = 0, currentPos = 0, notch = -5, isPaused = false, nextStationIdx = 1;
 
-        // テーマ切り替え（bodyのclassをトグル）
-        function toggleTheme() {
-            document.body.classList.toggle('light-mode');
-        }
-
+        function toggleTheme() { document.body.classList.toggle('light-mode'); }
         function togglePause() {
             isPaused = !isPaused;
-            document.getElementById('pause-btn').innerText = isPaused ? 'Resume' : 'Pause';
-            document.getElementById('pause-btn').style.backgroundColor = isPaused ? '#ff4444' : '';
+            const btn = document.getElementById('pause-btn');
+            btn.innerText = isPaused ? 'Resume' : 'Pause';
+            btn.style.backgroundColor = isPaused ? '#ff4444' : '';
         }
 
         function changeNotch(val) {
