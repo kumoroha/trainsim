@@ -29,16 +29,17 @@
             color: var(--text-color);
             font-family: 'Segoe UI', sans-serif;
             overflow: hidden;
-            height: 100vh;
+            /* dvh を使い、ツールバーを除いた「今見える高さ」に合わせる */
+            height: 100dvh;
             width: 100vw;
             display: flex;
             flex-direction: column;
             touch-action: manipulation;
         }
 
-        /* 1. ユーティリティ（さらに低く：40px） */
+        /* 1. ユーティリティ（さらにコンパクトに） */
         .utils {
-            height: 40px;
+            height: 35px;
             display: flex;
             justify-content: flex-end;
             align-items: center;
@@ -50,55 +51,53 @@
             background: var(--panel-color);
             color: var(--text-color);
             border: 1px solid #555;
-            padding: 2px 12px;
+            padding: 2px 10px;
             border-radius: 4px;
             font-size: 0.8rem;
         }
 
-        /* 2. 計器表示（ここをさらに圧縮しつつ、中央に配置） */
+        /* 2. 計器表示（伸縮性を最大にし、絶対に溢れさせない） */
         .display-container {
             flex: 1;
             display: grid;
-            grid-template-columns: 1fr 2fr 1fr;
-            padding: 0 10px;
+            grid-template-columns: 1fr 1.6fr 1fr;
+            padding: 5px 15px;
             align-items: center;
-            min-height: 0;
+            min-height: 0; /* 子要素が溢れるのを防ぐ */
         }
 
         .info-box { display: flex; flex-direction: column; justify-content: center; }
-        .limit-speed { color: #ff4444; font-size: 3.5rem; font-weight: bold; line-height: 1; }
+        .limit-speed { color: #ff4444; font-size: 3rem; font-weight: bold; line-height: 1; }
         
-        /* 中央計器のパーツ間隔を margin ではなく gap で厳密に管理 */
         .center-dash {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 10px; /* ここだけでパーツ間の距離を離す */
+            gap: 8px; /* ノッチ・速度・バーの間の隙間 */
         }
 
-        #notch-text { font-size: 2.5rem; font-weight: bold; line-height: 1; margin: 0; }
-        .main-speed { font-size: 7.5rem; font-weight: 800; line-height: 0.8; margin: 0; }
-        .speed-unit { font-size: 1.4rem; color: #666; }
+        #notch-text { font-size: 2.2rem; font-weight: bold; line-height: 1; margin: 0; }
+        .main-speed { font-size: 6.5rem; font-weight: 800; line-height: 0.8; margin: 0; }
+        .speed-unit { font-size: 1.2rem; color: #666; }
 
         .meter-container {
-            width: 90%;
-            height: 16px;
+            width: 85%;
+            height: 14px;
             background: #333;
             border-radius: 4px;
-            border: 2px solid #555;
+            border: 1px solid #555;
             overflow: hidden;
-            margin: 0;
         }
         #notch-bar { height: 100%; width: 0%; transition: width 0.1s; }
 
-        /* 3. 操作パネル（高さを32vhに固定して、絶対に溢れさせない） */
+        /* 3. 操作パネル（高さを30%以下に抑える） */
         .control-container {
-            height: 32vh; 
+            height: 28dvh; 
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            padding: 0 15px 25px 15px;
+            gap: 12px;
+            padding: 0 15px 25px 15px; /* 下部はiPadのバー用に少し空ける */
             box-sizing: border-box;
             flex-shrink: 0;
         }
@@ -107,14 +106,14 @@
             background: var(--panel-color);
             color: var(--btn-text);
             border: 2px solid #555;
-            border-radius: 15px;
-            font-size: 2.2rem;
+            border-radius: 12px;
+            font-size: 2rem;
             font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100%;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            height: 95%;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.4);
         }
         .notch-btn:active { background: #555; transform: scale(0.96); }
 
@@ -129,7 +128,7 @@
 
     <div class="display-container">
         <div class="info-box">
-            <span style="font-size:0.8rem; color:#888;">制限</span><br>
+            <span style="font-size:0.75rem; color:#888;">制限</span>
             <span id="limit" class="limit-speed">--</span>
         </div>
 
@@ -141,10 +140,10 @@
             </div>
         </div>
 
-        <div class="info-box" style="text-align:right; line-height: 1.2;">
-            <div style="color:var(--brake-color); font-weight:bold; font-size: 1.1rem;">9431M Expo Liner</div>
-            <div id="section-name" style="color:#aaa; font-size: 0.9rem;">Osaka → Nishi-Kujo</div>
-            <div id="distance" style="font-size: 1.8rem; margin-top:5px; font-weight: bold;">-- m</div>
+        <div class="info-box" style="text-align:right; line-height: 1.1;">
+            <div style="color:var(--brake-color); font-weight:bold; font-size: 1rem;">9431M Expo Liner</div>
+            <div id="section-name" style="color:#aaa; font-size: 0.8rem;">Osaka → Nishi-Kujo</div>
+            <div id="distance" style="font-size: 1.6rem; margin-top:3px; font-weight: bold;">-- m</div>
         </div>
     </div>
 
