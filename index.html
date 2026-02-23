@@ -31,12 +31,12 @@
             height: 100vh;
             width: 100vw;
             display: grid;
-            /* 画面を3つのエリアに厳格に分割 */
-            grid-template-rows: 50px 1fr 280px; 
+            /* 割合を微調整：上部(7%)、計器(53%)、下部ボタン(40%) */
+            grid-template-rows: 7vh 53vh 40vh;
             touch-action: manipulation;
         }
 
-        /* 1. ユーティリティ（50px固定） */
+        /* 1. ユーティリティ（高さを出し、文字も大きく） */
         .utils {
             display: flex;
             justify-content: flex-end;
@@ -49,21 +49,23 @@
             background: var(--panel-color);
             color: var(--text-color);
             border: 1px solid #555;
-            padding: 5px 12px;
-            border-radius: 6px;
+            padding: 8px 16px; /* パディングを増やして押しやすく */
+            border-radius: 8px;
+            font-size: 1rem; /* 文字を大きく */
+            font-weight: bold;
         }
 
-        /* 2. 計器表示（残りの全可変スペース） */
+        /* 2. 計器表示（余白を限界までカット） */
         .display-container {
             display: grid;
             grid-template-columns: 1fr 2fr 1fr;
             padding: 0 20px;
-            align-items: center; /* 垂直方向の中央 */
+            align-items: center;
             min-height: 0;
         }
 
         .info-box { display: flex; flex-direction: column; justify-content: center; }
-        .limit-speed { color: #ff4444; font-size: 4rem; font-weight: bold; line-height: 1; }
+        .limit-speed { color: #ff4444; font-size: 4.5rem; font-weight: bold; line-height: 1; }
         
         .center-dash {
             display: flex;
@@ -72,28 +74,28 @@
             justify-content: center;
         }
 
-        /* 文字サイズを大きく維持しつつ、余白を削る */
-        #notch-text { font-size: 3rem; font-weight: bold; line-height: 1; margin-bottom: 5px; }
-        .main-speed { font-size: 9rem; font-weight: 800; line-height: 0.8; }
-        .speed-unit { font-size: 1.8rem; color: #666; }
+        /* 限界まで間隔を詰める */
+        #notch-text { font-size: 3.2rem; font-weight: bold; line-height: 1; margin-bottom: 2px; }
+        .main-speed { font-size: 10rem; font-weight: 800; line-height: 0.75; }
+        .speed-unit { font-size: 2rem; color: #666; }
 
         .meter-container {
-            width: 90%;
-            height: 20px;
+            width: 95%;
+            height: 25px;
             background: #333;
             border-radius: 6px;
-            margin-top: 15px;
+            margin-top: 10px;
             border: 2px solid #555;
             overflow: hidden;
         }
         #notch-bar { height: 100%; width: 0%; transition: width 0.1s; }
 
-        /* 3. 操作パネル（280px固定：下端から浮かせない） */
+        /* 3. 操作パネル（高さをしっかり確保し、ボタンを大型化） */
         .control-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
-            padding: 0 20px 40px 20px; /* 下部40pxはiPadホームバー用 */
+            padding: 0 20px 30px 20px; /* 下部余白を少し詰め、高さを稼ぐ */
             box-sizing: border-box;
         }
 
@@ -101,15 +103,15 @@
             background: var(--panel-color);
             color: var(--btn-text);
             border: 2px solid #555;
-            border-radius: 20px;
-            font-size: 2.5rem;
+            border-radius: 25px;
+            font-size: 2.8rem;
             font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 200px; /* ボタンの高さをしっかり確保 */
-            align-self: start;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            height: 90%; /* 親要素(40vh)の中でほぼいっぱいに */
+            align-self: center;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.5);
         }
         .notch-btn:active { background: #555; transform: scale(0.97); }
 
@@ -124,7 +126,7 @@
 
     <div class="display-container">
         <div class="info-box">
-            <span style="font-size:1.1rem; color:#888;">制限</span>
+            <span style="font-size:1.2rem; color:#888;">制限</span>
             <span id="limit" class="limit-speed">--</span>
         </div>
 
@@ -137,9 +139,9 @@
         </div>
 
         <div class="info-box" style="text-align:right; line-height: 1.4;">
-            <div style="color:var(--brake-color); font-weight:bold; font-size: 1.3rem;">9431M エキスポライナー</div>
-            <div id="section-name" style="color:#aaa; font-size: 1.1rem;">大阪 → 西九条</div>
-            <div id="distance" style="font-size: 2.2rem; margin-top:10px; font-weight: bold;">-- m</div>
+            <div style="color:var(--brake-color); font-weight:bold; font-size: 1.4rem;">9431M エキスポライナー</div>
+            <div id="section-name" style="color:#aaa; font-size: 1.2rem;">大阪 → 西九条</div>
+            <div id="distance" style="font-size: 2.5rem; margin-top:5px; font-weight: bold;">-- m</div>
         </div>
     </div>
 
