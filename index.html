@@ -27,41 +27,46 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             font-family: 'Segoe UI', sans-serif;
-            overflow: hidden; /* スクロール禁止 */
+            overflow: hidden;
             height: 100vh;
+            width: 100vw;
             display: flex;
             flex-direction: column;
-            transition: background-color 0.3s, color 0.3s;
+            /* タッチ操作の挙動を制限（ダブルタップズーム無効化のCSS） */
+            touch-action: manipulation;
         }
 
-        /* ユーティリティボタン：絶対配置から通常の流れに変更して隠れるのを防止 */
+        /* 1. ユーティリティ（最上部：5vh） */
         .utils {
+            height: 8vh;
             display: flex;
             justify-content: flex-end;
+            align-items: center;
             gap: 10px;
-            padding: 10px;
-            height: 40px;
+            padding: 0 15px;
+            box-sizing: border-box;
+            background: rgba(255,255,255,0.05);
         }
         .util-btn {
             background: var(--panel-color);
             color: var(--text-color);
             border: 1px solid #555;
-            padding: 5px 15px;
+            padding: 8px 12px;
             border-radius: 5px;
-            font-size: 0.8rem;
+            font-size: 0.9rem;
         }
 
-        /* 上部計器エリア：高さを少し抑える */
+        /* 2. 計器表示（中央：42vh） */
         .display-container {
+            height: 42vh;
             display: grid;
-            grid-template-columns: 1fr 2fr 1fr;
-            flex: 0 0 35%; /* 画面の35%を占有 */
+            grid-template-columns: 1fr 1.5fr 1fr;
             padding: 10px 20px;
             box-sizing: border-box;
         }
 
         .info-box { display: flex; flex-direction: column; justify-content: center; }
-        .limit-speed { color: #ff4444; font-size: 3.5rem; font-weight: bold; line-height: 1; }
+        .limit-speed { color: #ff4444; font-size: 3rem; font-weight: bold; }
         
         .center-dash {
             display: flex;
@@ -69,31 +74,28 @@
             align-items: center;
             justify-content: center;
         }
-        
-        .speed-display-group { display: flex; align-items: baseline; }
-        .main-speed { font-size: 7rem; font-weight: 800; line-height: 1; }
-        .speed-unit { font-size: 1.2rem; color: #666; margin-left: 8px; }
-
-        #notch-text { font-size: 2rem; font-weight: bold; margin-bottom: 2px; height: 2.2rem; }
+        .main-speed { font-size: 6rem; font-weight: 800; line-height: 1; }
+        .speed-unit { font-size: 1.2rem; color: #666; }
+        #notch-text { font-size: 2rem; font-weight: bold; height: 2.2rem; }
 
         .meter-container {
             width: 90%;
-            height: 20px;
+            height: 18px;
             background: #333;
             border-radius: 4px;
             margin-top: 10px;
-            overflow: hidden;
             border: 1px solid #555;
+            overflow: hidden;
         }
         #notch-bar { height: 100%; width: 0%; transition: width 0.1s; }
 
-        /* 下部：操作エリア */
+        /* 3. 操作パネル（下部：50vh） */
         .control-container {
+            height: 50vh;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            flex: 1; /* 残りのスペースをすべて使う */
-            gap: 15px;
-            padding: 10px 20px 30px 20px; /* 下部余白を適切に確保 */
+            gap: 20px;
+            padding: 10px 20px 40px 20px; /* 下部40pxはiPadホームバー用 */
             box-sizing: border-box;
         }
 
@@ -102,21 +104,20 @@
             color: var(--btn-text);
             border: 2px solid #555;
             border-radius: 20px;
-            font-size: 2.2rem;
+            font-size: 2rem;
             font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-            height: 100%; /* 親要素内で最大化 */
+            /* ボタンが大きすぎないように最大高さを制限 */
+            max-height: 200px; 
+            align-self: center; 
+            height: 80%;
         }
-        .notch-btn:active { transform: scale(0.97); background: #444; }
 
     </style>
 </head>
-<body>
-
-    <div class="utils">
+<body ontouchstart=""> <div class="utils">
         <button class="util-btn" onclick="toggleTheme()">Theme</button>
         <button id="pause-btn" class="util-btn" onclick="togglePause()">Pause</button>
     </div>
@@ -129,19 +130,16 @@
 
         <div class="center-dash">
             <div id="notch-text">N</div>
-            <div class="speed-display-group">
-                <div id="speed" class="main-speed">0</div>
-                <div class="speed-unit">km/h</div>
-            </div>
+            <div class="main-speed"><span id="speed">0</span><span class="speed-unit"> km/h</span></div>
             <div class="meter-container">
                 <div id="notch-bar"></div>
             </div>
         </div>
 
-        <div class="info-box" style="text-align:right; line-height: 1.3;">
-            <div style="color:var(--brake-color); font-weight:bold; font-size: 1.1rem;">9431M エキスポライナー</div>
+        <div class="info-box" style="text-align:right; line-height: 1.2;">
+            <div style="color:var(--brake-color); font-weight:bold; font-size: 1rem;">9431M エキスポライナー</div>
             <div id="section-name" style="color:#aaa; font-size: 0.8rem;">大阪 → 西九条</div>
-            <div id="distance" style="font-size: 1.8rem; margin-top:10px; font-weight: bold;">-- km</div>
+            <div id="distance" style="font-size: 1.6rem; margin-top:5px; font-weight: bold;">-- km</div>
         </div>
     </div>
 
@@ -151,14 +149,19 @@
     </div>
 
     <script>
-        const PARAMS = {
-            accel_power: 0.04,
-            brake_power: 0.07,
-            eb_power: 0.25,
-            friction: 0.003,
-            refresh_ms: 50
-        };
+        // ダブルタップズームをJS側でも徹底防御
+        document.addEventListener('touchstart', (e) => {
+            if (e.touches.length > 1) e.preventDefault();
+        }, { passive: false });
+        
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (e) => {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) e.preventDefault();
+            lastTouchEnd = now;
+        }, false);
 
+        const PARAMS = { accel_power: 0.04, brake_power: 0.07, eb_power: 0.25, friction: 0.003, refresh_ms: 50 };
         const STATIONS = [
             { name: "大阪", dist: 0 },
             { name: "西九条", dist: 3800 },
@@ -167,11 +170,7 @@
             { name: "桜島", dist: 7800 }
         ];
 
-        let speed = 0;
-        let currentPos = 0;
-        let notch = 0;
-        let isPaused = false;
-        let nextStationIdx = 1;
+        let speed = 0, currentPos = 0, notch = 0, isPaused = false, nextStationIdx = 1;
 
         function toggleTheme() { document.body.classList.toggle('light-mode'); }
         function togglePause() {
@@ -189,8 +188,7 @@
         }
 
         function updateUI() {
-            const bar = document.getElementById('notch-bar');
-            const txt = document.getElementById('notch-text');
+            const bar = document.getElementById('notch-bar'), txt = document.getElementById('notch-text');
             if (notch > 0) {
                 bar.style.width = (notch / 5) * 100 + "%";
                 bar.style.backgroundColor = "var(--accel-color)";
@@ -211,41 +209,26 @@
 
         setInterval(() => {
             if (isPaused) return;
-
             if (notch > 0) speed += notch * PARAMS.accel_power;
-            else if (notch < 0) {
-                let power = (notch === -9) ? PARAMS.eb_power : PARAMS.brake_power;
-                speed += notch * power;
-            }
+            else if (notch < 0) speed += notch * ((notch === -9) ? PARAMS.eb_power : PARAMS.brake_power);
             speed -= PARAMS.friction;
             if (speed < 0) speed = 0;
-
             currentPos += (speed / 3.6) * (PARAMS.refresh_ms / 1000);
-            
-            let nextStation = STATIONS[nextStationIdx];
-            let distToNext = nextStation.dist - currentPos;
-
+            let nextStation = STATIONS[nextStationIdx], distToNext = nextStation.dist - currentPos;
             if (distToNext < 0) {
                 if (nextStationIdx < STATIONS.length - 1) {
                     nextStationIdx++;
                     nextStation = STATIONS[nextStationIdx];
                     distToNext = nextStation.dist - currentPos;
-                } else {
-                    distToNext = 0;
-                    speed = 0;
-                }
+                } else { distToNext = 0; speed = 0; }
             }
-
             document.getElementById('speed').innerText = Math.floor(speed);
             document.getElementById('distance').innerText = (distToNext / 1000).toFixed(2) + " km";
             document.getElementById('section-name').innerText = STATIONS[nextStationIdx-1].name + " → " + nextStation.name;
-
             if (distToNext < 300) document.getElementById('limit').innerText = "25";
             else if (distToNext < 800) document.getElementById('limit').innerText = "45";
             else document.getElementById('limit').innerText = "95";
-
         }, PARAMS.refresh_ms);
-
         updateUI();
     </script>
 </body>
