@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Expo Liner Simulator Pro</title>
     <style>
         :root {
@@ -15,6 +15,14 @@
             --eb-color: #ff0000;
         }
 
+        /* 明示的にlight-modeの時の背景と文字色を指定 */
+        body.light-mode {
+            --bg-color: #f0f0f0;
+            --panel-color: #ffffff;
+            --text-color: #222222;
+            --btn-text: #222222;
+        }
+
         body {
             margin: 0;
             padding: 0;
@@ -22,56 +30,65 @@
             color: var(--text-color);
             font-family: 'Segoe UI', sans-serif;
             overflow: hidden;
-            /* vhを使わず、現在のブラウザの表示領域いっぱいに設定 */
-            height: 100%;
-            position: fixed;
-            width: 100%;
+            height: 100vh;
+            width: 100vw;
             display: flex;
             flex-direction: column;
             touch-action: manipulation;
         }
 
-        /* 1. ユーティリティ（完全に最上部へ固定） */
+        /* 1. ユーティリティ（確実にクリックできるようz-indexを指定） */
         .utils {
-            height: 40px;
+            height: 45px;
             display: flex;
             justify-content: flex-end;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             padding: 0 15px;
             flex-shrink: 0;
+            z-index: 100;
         }
         .util-btn {
             background: var(--panel-color);
             color: var(--text-color);
-            border: 1px solid #555;
-            padding: 4px 12px;
-            border-radius: 4px;
+            border: 2px solid #555;
+            padding: 5px 15px;
+            border-radius: 6px;
             font-size: 0.9rem;
+            cursor: pointer;
         }
 
-        /* 2. 計器表示（ここを「伸縮自在」にする） */
+        /* 2. 計器表示（隙間を調整） */
         .display-container {
-            flex: 1; /* 余ったスペースを自動で埋める */
-            display: flex;
-            justify-content: space-around;
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1.8fr 1fr;
+            padding: 10px 15px;
             align-items: center;
-            padding: 0 10px;
-            min-height: 0; /* 溢れ防止の魔法のプロパティ */
+            min-height: 0;
         }
 
-        .info-box { width: 25%; }
-        .limit-speed { color: #ff4444; font-size: 3.5rem; font-weight: bold; line-height: 1; display: block;}
+        .info-box { display: flex; flex-direction: column; justify-content: center; }
+        .limit-speed { color: #ff4444; font-size: 3.5rem; font-weight: bold; line-height: 1; }
         
         .center-dash {
-            width: 50%;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
         }
 
-        #notch-text { font-size: 3rem; font-weight: bold; line-height: 1; }
-        .main-speed { font-size: 8.5rem; font-weight: 800; line-height: 0.85; margin: 5px 0; }
+        /* 各パーツの距離を離す調整 */
+        #notch-text { 
+            font-size: 2.8rem; 
+            font-weight: bold; 
+            margin-bottom: 15px; /* ノッチと速度の間隔 */
+        }
+        .main-speed { 
+            font-size: 8rem; 
+            font-weight: 800; 
+            line-height: 0.8;
+        }
         .speed-unit { font-size: 1.5rem; color: #666; }
 
         .meter-container {
@@ -79,74 +96,75 @@
             height: 20px;
             background: #333;
             border-radius: 4px;
-            border: 1px solid #555;
+            margin-top: 25px; /* 速度とバーの間隔 */
+            border: 2px solid #555;
             overflow: hidden;
         }
         #notch-bar { height: 100%; width: 0%; transition: width 0.1s; }
 
-        /* 3. 操作パネル（高さを固定し、絶対に底から浮かさない） */
+        /* 3. 操作パネル（絶対溢れない高さ設定） */
         .control-container {
-            height: 240px; /* 高さをピクセルで固定 */
+            height: 250px;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            padding: 0 15px 30px 15px;
+            gap: 20px;
+            padding: 0 20px 40px 20px;
             box-sizing: border-box;
-            flex-shrink: 0; /* 画面が狭くても絶対に縮まない */
+            flex-shrink: 0;
         }
 
         .notch-btn {
             background: var(--panel-color);
             color: var(--btn-text);
             border: 2px solid #555;
-            border-radius: 15px;
-            font-size: 2.5rem;
+            border-radius: 20px;
+            font-size: 2.4rem;
             font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
             height: 100%;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.5);
         }
-        .notch-btn:active { background: #555; transform: scale(0.96); }
+        .notch-btn:active { background: #555; transform: scale(0.97); }
 
     </style>
 </head>
-<body ontouchstart="">
+<body>
 
     <div class="utils">
-        <button class="util-btn" onclick="toggleTheme()">Theme</button>
-        <button id="pause-btn" class="util-btn" onclick="togglePause()">Pause</button>
+        <button class="util-btn" onpointerdown="toggleTheme()">Theme</button>
+        <button id="pause-btn" class="util-btn" onpointerdown="togglePause()">Pause</button>
     </div>
 
     <div class="display-container">
         <div class="info-box">
-            <span style="font-size:0.9rem; color:#888;">制限</span><br>
+            <span style="font-size:1rem; color:#888;">制限</span><br>
             <span id="limit" class="limit-speed">--</span>
         </div>
 
         <div class="center-dash">
             <div id="notch-text">N</div>
-            <div class="main-speed"><span id="speed">0</span><span class="speed-unit">km/h</span></div>
+            <div class="main-speed"><span id="speed">0</span><span class="speed-unit"> km/h</span></div>
             <div class="meter-container">
                 <div id="notch-bar"></div>
             </div>
         </div>
 
         <div class="info-box" style="text-align:right;">
-            <div style="color:var(--brake-color); font-weight:bold; font-size: 1.1rem;">9431M Expo Liner</div>
-            <div id="section-name" style="color:#aaa; font-size: 0.9rem;">Osaka → Nishi-Kujo</div>
-            <div id="distance" style="font-size: 2rem; margin-top:5px; font-weight: bold;">-- m</div>
+            <div style="color:var(--brake-color); font-weight:bold; font-size: 1.2rem;">9431M Expo Liner</div>
+            <div id="section-name" style="color:#aaa; font-size: 1rem;">Osaka → Nishi-Kujo</div>
+            <div id="distance" style="font-size: 2rem; margin-top:10px; font-weight: bold;">-- m</div>
         </div>
     </div>
 
     <div class="control-container">
-        <button class="notch-btn" onclick="changeNotch(1)">▲ 加速</button>
-        <button class="notch-btn" onclick="changeNotch(-1)">▼ 減速</button>
+        <button class="notch-btn" onpointerdown="changeNotch(1)">▲ 加速</button>
+        <button class="notch-btn" onpointerdown="changeNotch(-1)">▼ 減速</button>
     </div>
 
     <script>
-        // ダブルタップズーム禁止（iPad用）
+        // タッチ操作の遅延をなくし、かつ誤ズームを防ぐ
         document.addEventListener('touchstart', (e) => {
             if (e.touches.length > 1) e.preventDefault();
         }, { passive: false });
@@ -162,7 +180,11 @@
 
         let speed = 0, currentPos = 0, notch = -5, isPaused = false, nextStationIdx = 1;
 
-        function toggleTheme() { document.body.classList.toggle('light-mode'); }
+        // テーマ切り替え（bodyのclassをトグル）
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+        }
+
         function togglePause() {
             isPaused = !isPaused;
             document.getElementById('pause-btn').innerText = isPaused ? 'Resume' : 'Pause';
