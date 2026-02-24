@@ -32,10 +32,8 @@
             color: var(--text-color);
             font-family: 'Segoe UI', sans-serif;
             overflow: hidden;
-            height: 100dvh;
-            width: 100vw;
-            display: flex;
-            flex-direction: column;
+            height: 100dvh; width: 100vw;
+            display: flex; flex-direction: column;
             touch-action: manipulation;
             position: relative;
         }
@@ -45,38 +43,25 @@
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             background: var(--pause-bg);
-            display: flex;
-            align-items: center; justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             font-size: 5rem; font-weight: 900; letter-spacing: 1rem;
             color: var(--pause-text); z-index: 1000; backdrop-filter: blur(2px);
         }
 
         .header-area {
-            height: 50px;
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            padding: 0 25px;
-            gap: 15px;
-            flex-shrink: 0;
-            z-index: 1100;
+            height: 50px; display: flex; justify-content: flex-end;
+            align-items: center; padding: 0 25px; gap: 15px; flex-shrink: 0; z-index: 1100;
         }
 
         .util-btn {
-            background: var(--panel-color);
-            color: var(--text-color);
-            border: 2px solid #555;
-            padding: 8px 16px; border-radius: 8px;
-            font-size: 1.1rem; font-weight: 900;
+            background: var(--panel-color); color: var(--text-color);
+            border: 2px solid #555; padding: 8px 16px; border-radius: 8px;
+            font-size: 1.1rem; font-weight: 900; cursor: pointer;
         }
 
         .display-container {
-            flex: 1; 
-            display: grid;
-            grid-template-columns: 1fr 2fr 1fr;
-            padding: 0 25px;
-            align-items: center;
-            min-height: 0;
+            flex: 1; display: grid; grid-template-columns: 1fr 2fr 1fr;
+            padding: 0 25px; align-items: center; min-height: 0;
         }
 
         .limit-speed { color: #ff4444; font-size: 4.2rem; font-weight: bold; line-height: 1; }
@@ -90,17 +75,17 @@
         .speed-unit { font-size: 2rem; color: #666; }
 
         .meter-container {
-            width: 100%; height: 24px; background: #333; border-radius: 6px; border: 2px solid #555; overflow: hidden;
+            width: 100%; height: 24px; background: #333;
+            border-radius: 6px; border: 2px solid #555; overflow: hidden;
         }
         #notch-bar { height: 100%; width: 0%; transition: width 0.1s; }
 
         .right-info {
-            text-align: right;
-            display: flex; flex-direction: column; gap: 4px;
+            text-align: right; display: flex; flex-direction: column; gap: 4px;
         }
 
         #judgment {
-            font-size: 2rem; font-weight: 900; height: 2.2rem;
+            font-size: 2.2rem; font-weight: 900; height: 2.4rem; margin-top: 5px;
         }
 
         .control-container {
@@ -111,6 +96,7 @@
         .notch-btn {
             flex: 1; background: var(--panel-color); color: var(--btn-text);
             border: 2px solid #555; border-radius: 20px; font-size: 2.8rem; font-weight: bold; height: 100%;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.5);
         }
 
         .eb-btn-small {
@@ -218,28 +204,36 @@
         setInterval(() => {
             if (isPaused) return;
             
+            // 加減速計算
             if (notch > 0) speed += notch * PARAMS.accel_power;
             else if (notch < 0) speed += notch * ((notch === -9) ? PARAMS.eb_power : PARAMS.brake_power);
             speed -= PARAMS.friction;
+
+            // 停車判定のロジック
             if (speed < 0.1) {
                 if (speed > 0 && !hasStopped) {
-                    checkStopJudgment();
+                    checkStopJudgment(); // 止まった瞬間に判定
                     hasStopped = true;
                 }
                 speed = 0;
-            } else {
-                hasStopped = false;
+            } else if (speed > 0.5) {
+                // 動き出したら判定表示を消す
+                if (hasStopped) {
+                    document.getElementById('judgment').innerText = "";
+                    hasStopped = false;
+                }
             }
             
             currentPos += (speed / 3.6) * (PARAMS.refresh_ms / 1000);
-            let nextStation = STATIONS[nextStationIdx], distToNext = nextStation.dist - currentPos;
+            let nextStation = STATIONS[nextStationIdx];
+            let distToNext = nextStation.dist - currentPos;
             
-            // 表示更新
+            // UI更新
             document.getElementById('speed').innerText = Math.floor(speed);
             document.getElementById('limit').innerText = (distToNext < 300) ? 25 : (distToNext < 800) ? 45 : 95;
             document.getElementById('next-name').innerText = nextStation.name;
 
-            // 距離表示 (5m以下でcm表示)
+            // 距離表示
             const distEl = document.getElementById('distance');
             if (distToNext <= 5 && distToNext >= -5) {
                 distEl.innerText = (distToNext * 100).toFixed(1) + " cm";
@@ -249,10 +243,12 @@
                 distEl.style.color = "";
             }
 
+            // ATS-P超過
             if (speed > parseInt(document.getElementById('limit').innerText) && notch !== -9) {
                 lastNotch = notch; notch = -9; updateUI();
             }
 
+            // 次の駅へ（駅を10m以上通り過ぎたら次の駅へターゲットを切り替え）
             if (distToNext < -10 && nextStationIdx < STATIONS.length - 1) {
                 nextStationIdx++;
                 document.getElementById('judgment').innerText = "";
@@ -260,13 +256,16 @@
         }, PARAMS.refresh_ms);
 
         function checkStopJudgment() {
-            let nextStation = STATIONS[nextStationIdx], diff = Math.abs(nextStation.dist - currentPos) * 100;
-            let judge = document.getElementById('judgment');
-            if (diff < 10) { judge.innerText = "EXCELLENT"; judge.style.color = "#00ffff"; }
-            else if (diff < 30) { judge.innerText = "GREAT"; judge.style.color = "var(--accel-color)"; }
-            else if (diff < 100) { judge.innerText = "GOOD"; judge.style.color = "#fff"; }
-            else { judge.innerText = "BAD"; judge.style.color = "var(--eb-color)"; }
+            let nextStation = STATIONS[nextStationIdx];
+            let diff = Math.abs(nextStation.dist - currentPos) * 100; // cm単位
+            let judgeEl = document.getElementById('judgment');
+            
+            if (diff < 10) { judgeEl.innerText = "EXCELLENT"; judgeEl.style.color = "#00ffff"; }
+            else if (diff < 30) { judgeEl.innerText = "GREAT"; judgeEl.style.color = "var(--accel-color)"; }
+            else if (diff < 100) { judgeEl.innerText = "GOOD"; judgeEl.style.color = "#fff"; }
+            else { judgeEl.innerText = "BAD"; judgeEl.style.color = "var(--eb-color)"; }
         }
+
         updateUI();
     </script>
 </body>
