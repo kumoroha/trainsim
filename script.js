@@ -18,7 +18,7 @@ let speed = 0, currentPos = 0, notch = -5, isPaused = false, nextStationIdx = 1,
 let startTime = null;
 let elapsedTime = 0;
 
-// ダイヤ表示ロジック
+// ダイヤ表示ロジック（あと○分○秒 形式）
 function updateClock() {
     if (isPaused || isStationProcess) return;
     if (startTime === null && speed > 0) startTime = Date.now();
@@ -31,18 +31,19 @@ function updateClock() {
         const clockEl = document.getElementById('clock');
         
         if (remain > 100) {
-            // 100秒より多ければ「あと○分」
-            let mins = Math.ceil(remain / 60);
-            clockEl.innerText = `あと${mins}分`;
+            // 100秒より多ければ「あと○分○秒」
+            let mins = Math.floor(remain / 60);
+            let secs = remain % 60;
+            clockEl.innerText = `あと${mins}分${secs}秒`;
             clockEl.style.color = "var(--accel-color)";
         } else if (remain >= 0) {
             // 100秒以下なら「あと○秒」
             clockEl.innerText = `あと${remain}秒`;
-            clockEl.style.color = "#ffaa00"; // カウントダウン警戒色
+            clockEl.style.color = "#ffaa00";
         } else {
-            // 0秒を過ぎたら（延着）
+            // 遅延時
             clockEl.innerText = `${Math.abs(remain)}秒 遅れ`;
-            clockEl.style.color = "#ff0000"; // 遅延警告
+            clockEl.style.color = "#ff0000";
         }
     }
 }
