@@ -45,7 +45,6 @@ body.is-paused::after {
 
 #next-limit-val { font-size: 1.4rem; color: #ff3333; }
 
-/* 予告距離を大きく表示 */
 #next-limit-dist { 
     font-size: 2.8rem !important; 
     color: #ff4444;
@@ -59,11 +58,40 @@ body.is-paused::after {
     margin-left: 4px;
 }
 
-.center-dash { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
-#notch-text { font-size: 3.5rem; font-weight: bold; line-height: 1; }
-.main-speed { font-size: 10rem; font-weight: 800; line-height: 0.75; letter-spacing: -2px; }
+/* 中央計器エリアのパーツ間隔を拡大 */
+.center-dash { 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 45px; /* ここを大きくして各パーツを離しました */
+}
+
+#notch-text { 
+    font-size: 3.5rem; 
+    font-weight: bold; 
+    line-height: 1; 
+}
+
+.main-speed { 
+    font-size: 10rem; 
+    font-weight: 800; 
+    line-height: 0.75; 
+    letter-spacing: -2px; 
+    margin: 10px 0; /* 速度計の上下にも追加のマージン */
+}
+
 .speed-unit { font-size: 2.2rem; color: #555; margin-left: 5px; }
-.meter-container { width: 100%; height: 30px; background: #333; border-radius: 8px; border: 2.5px solid #555; overflow: hidden; }
+
+.meter-container { 
+    width: 100%; 
+    height: 30px; 
+    background: #333; 
+    border-radius: 8px; 
+    border: 2.5px solid #555; 
+    overflow: hidden; 
+}
+
 #notch-bar { height: 100%; width: 0%; transition: width 0.1s; }
 
 .right-info { text-align: right; display: flex; flex-direction: column; gap: 8px; }
