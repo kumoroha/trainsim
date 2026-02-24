@@ -1,4 +1,11 @@
-const PARAMS = { accel_unit: 0.028, brake_unit: 0.44, eb_power: 0.195, friction: 0.003, refresh_ms: 50 };
+const PARAMS = { 
+    accel_unit: 0.028, // P5で約2.5km/h/s
+    brake_unit: 0.44,  // B8で約3.5km/h/s
+    eb_power: 0.195,   
+    friction: 0.003, 
+    refresh_ms: 50 
+};
+
 const STATIONS = [
     { name: "大阪", dist: 0, arrivalSec: 0 },
     { name: "西九条", dist: 3800, arrivalSec: 360 },
@@ -62,7 +69,6 @@ function handleEB() {
 
 function updateUI() {
     const bar = document.getElementById('notch-bar'), txt = document.getElementById('notch-text'), ebBtn = document.getElementById('eb-btn');
-    
     if (notch > 0) {
         bar.style.width = (notch / 5) * 100 + "%";
         bar.style.backgroundColor = "var(--accel-color)";
@@ -70,7 +76,7 @@ function updateUI() {
         txt.style.color = "var(--accel-color)";
     } else if (notch < 0) {
         let absN = Math.abs(notch);
-        bar.style.width = (absN / 9) * 100 + "%"; // EBが100%になる計算
+        bar.style.width = (absN / 9) * 100 + "%";
         if (notch === -9) {
             bar.style.backgroundColor = "var(--eb-color)";
             txt.innerText = "EB";
@@ -90,22 +96,33 @@ function updateUI() {
     }
 }
 
-// 信号ロジック更新
+// 信号ロジック (dNext: 次の駅までの距離)
 function updateSignal(dNext) {
     const r = document.getElementById('lamp-r'), y = document.getElementById('lamp-y'), g = document.getElementById('lamp-g'), name = document.getElementById('signal-name');
-    [r, y, g].forEach(l => l.className = 'lamp');
+    r.classList.remove('red'); y.classList.remove('yellow'); g.classList.remove('green');
     
-    if (dNext < 400) { r.classList.add('red'); name.innerText = "場内(停止)"; }
-    else if (dNext < 800) { y.classList.add('yellow'); name.innerText = "第1閉塞(注意)"; }
-    else if (dNext < 1500) { y.classList.add('yellow'); g.classList.add('green'); name.innerText = "第2閉塞(減速)"; }
-    else { g.classList.add('green'); name.innerText = "第3閉塞(進行)"; }
+    if (dNext < 400) { 
+        r.classList.add('red'); name.innerText = "場内 (停止)"; 
+    } else if (dNext < 800) { 
+        y.classList.add('yellow'); name.innerText = "第1閉塞 (注意)"; 
+    } else if (dNext < 1500) { 
+        y.classList.add('yellow'); g.classList.add('green'); name.innerText = "第2閉塞 (減速)"; 
+    } else { 
+        g.classList.add('green'); name.innerText = "第3閉塞 (進行)"; 
+    }
 }
 
 setInterval(() => {
     if (isPaused || isStationProcess) return;
+    
+    // 加減速処理
     if (notch > 0) speed += notch * PARAMS.accel_unit;
-    else if (notch < 0) speed -= (notch === -9) ? PARAMS.eb_power : (Math.abs(notch) * (PARAMS.brake_unit / 8));
+    else if (notch < 0) {
+        let decel = (notch === -9) ? PARAMS.eb_power : (Math.abs(notch) * (PARAMS.brake_unit / 8));
+        speed -= decel;
+    }
     speed -= PARAMS.friction;
+    
     if (speed < 0.1) {
         if (speed > 0 && !hasStopped) {
             hasStopped = true;
@@ -121,10 +138,11 @@ setInterval(() => {
 
     let cLimit = (dNext < 300) ? 25 : (dNext < 800) ? 45 : 95;
     document.getElementById('speed').innerText = Math.floor(speed);
-    document.getElementById('limit').innerText = (dNext < 300) ? 25 : (dNext < 800) ? 45 : 95;
+    document.getElementById('limit').innerText = cLimit;
     document.getElementById('next-limit-dist').innerText = (dNext < 300) ? "停車" : (dNext < 800) ? Math.floor(dNext - 300) : Math.floor(dNext - 800);
     document.getElementById('next-name').innerText = STATIONS[nextStationIdx].name;
     document.getElementById('distance').innerText = dNext < 5 ? (dNext * 100).toFixed(1) + " cm" : Math.floor(dNext) + " m";
+    
     if (Math.floor(speed) > cLimit && notch !== -9) { notch = -9; updateUI(); }
 }, PARAMS.refresh_ms);
 
@@ -132,8 +150,13 @@ function processArrival() {
     isStationProcess = true;
     let diff = Math.abs(STATIONS[nextStationIdx].dist - currentPos) * 100;
     let tDiff = elapsedTime - STATIONS[nextStationIdx].arrivalSec;
-    alert(`【停車】${(diff/100).toFixed(2)}m誤差\n【ダイヤ】${tDiff === 0 ? "定時" : tDiff > 0 ? tDiff+"秒延着" : Math.abs(tDiff)+"秒早着"}`);
-    if (nextStationIdx < STATIONS.length - 1) { nextStationIdx++; isStationProcess = false; notch = -5; updateUI(); }
+    alert(`【停車判定】\n誤差: ${(diff/100).toFixed(2)}m\nダイヤ: ${tDiff === 0 ? "定時" : tDiff > 0 ? tDiff+"秒延着" : Math.abs(tDiff)+"秒早着"}`);
+    if (nextStationIdx < STATIONS.length - 1) { 
+        nextStationIdx++; 
+        isStationProcess = false; 
+        notch = -5; 
+        updateUI(); 
+    }
 }
 function resetGame() { if (confirm("リセットしますか？")) location.reload(); }
 updateUI();
