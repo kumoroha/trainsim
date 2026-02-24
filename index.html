@@ -24,12 +24,12 @@
             background: var(--pause-bg); display: flex; align-items: center; justify-content: center;
             font-size: 5rem; font-weight: 900; letter-spacing: 1rem; color: var(--pause-text); z-index: 1000; backdrop-filter: blur(2px);
         }
-        .header-area { height: 50px; display: flex; justify-content: flex-end; align-items: center; padding: 0 25px; gap: 15px; flex-shrink: 0; z-index: 1100; }
-        .util-btn { background: var(--panel-color); color: var(--text-color); border: 2px solid #555; padding: 8px 16px; border-radius: 8px; font-size: 1.1rem; font-weight: 900; cursor: pointer; }
+        .header-area { height: 55px; display: flex; justify-content: flex-end; align-items: center; padding: 0 20px; gap: 10px; flex-shrink: 0; z-index: 1100; }
+        .util-btn { background: var(--panel-color); color: var(--text-color); border: 2px solid #555; padding: 6px 12px; border-radius: 8px; font-size: 1rem; font-weight: 900; cursor: pointer; }
         .display-container { flex: 1; display: grid; grid-template-columns: 1fr 2fr 1fr; padding: 0 25px; align-items: center; min-height: 0; }
         .limit-speed { color: #ff4444; font-size: 4.2rem; font-weight: bold; line-height: 1; }
-        .center-dash { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 25px; }
-        #notch-text { font-size: 3.8rem; font-weight: bold; line-height: 1; }
+        .center-dash { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
+        #notch-text { font-size: 3.5rem; font-weight: bold; line-height: 1; }
         .main-speed { font-size: 10rem; font-weight: 800; line-height: 0.75; }
         .speed-unit { font-size: 2rem; color: #666; }
         .meter-container { width: 100%; height: 24px; background: #333; border-radius: 6px; border: 2px solid #555; overflow: hidden; }
@@ -37,17 +37,16 @@
         .right-info { text-align: right; display: flex; flex-direction: column; gap: 4px; }
         #judgment { font-size: 2.2rem; font-weight: 900; height: 2.4rem; margin-top: 5px; }
         .control-container { height: 220px; display: flex; align-items: center; justify-content: center; gap: 15px; padding: 10px 20px 30px 20px; box-sizing: border-box; flex-shrink: 0; }
-        .notch-btn { flex: 1; background: var(--panel-color); color: var(--btn-text); border: 2px solid #555; border-radius: 20px; font-size: 2.8rem; font-weight: bold; height: 100%; box-shadow: 0 6px 12px rgba(0,0,0,0.5); }
+        .notch-btn { flex: 1; background: var(--panel-color); color: var(--btn-text); border: 2px solid #555; border-radius: 20px; font-size: 2.8rem; font-weight: bold; height: 100%; }
         .eb-btn-small { width: 85px; height: 85px; background: #aa0000; border: 4px solid #440000; border-radius: 50%; color: white; font-size: 1.4rem; font-weight: 900; display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 0 #550000; flex-shrink: 0; margin-bottom: 20px; }
         .eb-btn-small.eb-on { background: #ff0000; box-shadow: 0 0 25px #ff0000; border-color: #ffaaaa; transform: scale(1.05); }
     </style>
 </head>
 <body ontouchstart="">
     <div class="header-area">
-        <div class="utils">
-            <button class="util-btn" onpointerdown="toggleTheme()">Theme</button>
-            <button id="pause-btn" class="util-btn" onpointerdown="togglePause()">Pause</button>
-        </div>
+        <button class="util-btn" style="color:#ff4444; border-color:#800;" onpointerdown="resetGame()">最初から</button>
+        <button class="util-btn" onpointerdown="toggleTheme()">Theme</button>
+        <button id="pause-btn" class="util-btn" onpointerdown="togglePause()">Pause</button>
     </div>
     <div class="display-container">
         <div class="info-box">
@@ -60,7 +59,7 @@
             <div class="meter-container"><div id="notch-bar"></div></div>
         </div>
         <div class="right-info">
-            <div style="color:var(--accel-color); font-weight:bold; font-size: 1.6rem; letter-spacing: 0.1rem;">NEXT: <span id="next-name">---</span></div>
+            <div style="color:var(--accel-color); font-weight:bold; font-size: 1.6rem;">NEXT: <span id="next-name">---</span></div>
             <div style="color:var(--brake-color); font-weight:bold; font-size: 1.4rem;">9431M Expo Liner</div>
             <div style="color:#aaa; font-size: 1.1rem;">Osaka → Sakurajima</div>
             <div id="judgment"></div>
@@ -76,12 +75,18 @@
     <script>
         document.addEventListener('touchstart', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
         
-        // 全体のブレーキ力を大幅に緩和 (B8: 0.07 -> 0.045, EB: 0.12 -> 0.065)
-        // これにより、これまでの常用ブレーキくらいの感覚でEBが効くようになります
         const PARAMS = { accel_power: 0.04, brake_power: 0.045, eb_power: 0.065, friction: 0.003, refresh_ms: 50 };
         const STATIONS = [{ name: "大阪", dist: 0 }, { name: "西九条", dist: 3800 }, { name: "安治川口", dist: 5400 }, { name: "ユニバーサルシティ", dist: 6600 }, { name: "桜島", dist: 7800 }];
         
         let speed = 0, currentPos = 0, notch = -5, isPaused = false, nextStationIdx = 1, lastNotch = 0, hasStopped = false;
+
+        function resetGame() {
+            if (confirm("シミュレーションを最初からやり直しますか？")) {
+                speed = 0; currentPos = 0; notch = -5; nextStationIdx = 1; hasStopped = false;
+                document.getElementById('judgment').innerText = "";
+                updateUI();
+            }
+        }
 
         function toggleTheme() { document.body.classList.toggle('light-mode'); }
         function togglePause() { isPaused = !isPaused; document.getElementById('pause-btn').innerText = isPaused ? 'Resume' : 'Pause'; document.body.classList.toggle('is-paused', isPaused); }
@@ -90,12 +95,8 @@
         function handleEB() {
             if (isPaused) return;
             let currentLimit = parseInt(document.getElementById('limit').innerText);
-            if (notch === -9) {
-                // 解除条件：速度が制限以下なら即座に手動解除可能
-                if (speed <= currentLimit || speed === 0) { notch = lastNotch; }
-            } else {
-                lastNotch = notch; notch = -9;
-            }
+            if (notch === -9) { if (speed <= currentLimit || speed === 0) { notch = lastNotch; } }
+            else { lastNotch = notch; notch = -9; }
             updateUI();
         }
 
@@ -114,14 +115,18 @@
         setInterval(() => {
             if (isPaused) return;
             if (notch > 0) speed += notch * PARAMS.accel_power; 
-            else if (notch < 0) speed += notch * ((notch === -9) ? PARAMS.eb_power : (PARAMS.brake_power/8)); // B1ごとの変化をより滑らかに
+            else if (notch < 0) speed += notch * ((notch === -9) ? PARAMS.eb_power : (PARAMS.brake_power/8));
             speed -= PARAMS.friction;
 
+            // 停車・発車判定の強化
             if (speed < 0.1) {
                 if (speed > 0 && !hasStopped) { checkStopJudgment(); hasStopped = true; }
                 speed = 0;
-            } else if (speed > 0.5) {
-                if (hasStopped) { document.getElementById('judgment').innerText = ""; hasStopped = false; }
+            } else if (speed >= 1.0) { // 1km/h以上で完全に判定をリセット
+                if (hasStopped || document.getElementById('judgment').innerText !== "") {
+                    document.getElementById('judgment').innerText = "";
+                    hasStopped = false;
+                }
             }
             
             currentPos += (speed / 3.6) * (PARAMS.refresh_ms / 1000);
@@ -137,12 +142,13 @@
             else { distEl.innerText = Math.floor(distToNext) + " m"; distEl.style.color = ""; }
 
             if (speed > currentLimit && notch !== -9) { lastNotch = notch; notch = -9; updateUI(); }
-
-            // 自動復帰（制限速度-20km/h以下）
             if (notch === -9 && speed <= currentLimit - 20 && speed > 0) { notch = lastNotch; updateUI(); }
 
-            if (distToNext < -10 && nextStationIdx < STATIONS.length - 1) {
-                nextStationIdx++; document.getElementById('judgment').innerText = "";
+            // 駅切り替え (15m以上離れたらリセット)
+            if (distToNext < -15 && nextStationIdx < STATIONS.length - 1) {
+                nextStationIdx++;
+                document.getElementById('judgment').innerText = "";
+                hasStopped = false;
             }
         }, PARAMS.refresh_ms);
 
