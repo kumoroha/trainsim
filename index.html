@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Expo Liner Simulator Pro 2.45</title>
+    <title>Expo Liner Simulator Pro 2.47</title>
     <style>
         :root {
             --bg-color: #050505; --panel-color: #1a1a1a; --text-color: #e0e0e0; --btn-text: #ffffff;
@@ -35,7 +35,6 @@
         
         .display-container { flex: 1; display: grid; grid-template-columns: 1.2fr 2fr 1fr; padding: 0 15px; align-items: center; gap: 5px; }
         
-        /* 制限予告エリア */
         .limit-area { display: flex; flex-direction: column; gap: 5px; }
         .limit-main { display: flex; flex-direction: column; }
         .limit-speed { color: #ff3333; font-size: 3.8rem; font-weight: bold; line-height: 1; }
@@ -49,7 +48,6 @@
         #notch-bar { height: 100%; width: 0%; transition: width 0.1s; }
         
         .right-info { text-align: right; display: flex; flex-direction: column; gap: 4px; }
-        #judgment { font-size: 1.8rem; font-weight: 900; height: 2rem; transition: opacity 0.5s; }
         .train-info-small { font-size: 0.9rem; font-weight: bold; opacity: 0.8; }
         
         .control-container { height: 240px; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 10px 15px 30px 15px; box-sizing: border-box; flex-shrink: 0; }
@@ -84,7 +82,6 @@
             <div style="color:var(--accel-color); font-weight:bold; font-size: 1.3rem;">NEXT: <span id="next-name">---</span></div>
             <div style="color:var(--brake-color); font-weight:bold; font-size: 1.1rem;">9431M Expo Liner</div>
             <div class="train-info-small">Osaka → Sakurajima</div>
-            <div id="judgment"></div>
             <div id="distance" style="font-size: 2.5rem; font-weight: bold;">-- m</div>
         </div>
     </div>
@@ -104,13 +101,11 @@
         };
         const STATIONS = [{ name: "大阪", dist: 0 }, { name: "西九条", dist: 3800 }, { name: "安治川口", dist: 5400 }, { name: "ユニバーサルシティ", dist: 6600 }, { name: "桜島", dist: 7800 }];
         
-        let speed = 0, currentPos = 0, notch = -5, isPaused = false, nextStationIdx = 1, hasStopped = false, stopPos = 0;
+        let speed = 0, currentPos = 0, notch = -5, isPaused = false, nextStationIdx = 1, hasStopped = false, isStationProcess = false;
 
         function resetGame() {
             if (confirm("最初からやり直しますか？")) {
-                speed = 0; currentPos = 0; notch = -5; nextStationIdx = 1; hasStopped = false; stopPos = 0;
-                document.getElementById('judgment').innerText = "";
-                updateUI();
+                location.reload();
             }
         }
         function toggleTheme() { document.body.classList.toggle('light-mode'); }
@@ -121,7 +116,7 @@
         }
         
         function changeNotch(val) { 
-            if (isPaused) return; 
+            if (isPaused || isStationProcess) return; 
             if (val > 0) { 
                 if (notch === -9) {
                     let cLim = parseInt(document.getElementById('limit').innerText) || 95;
@@ -136,7 +131,7 @@
         }
 
         function handleEB() {
-            if (isPaused) return;
+            if (isPaused || isStationProcess) return;
             if (notch === -9) {
                 let cLim = parseInt(document.getElementById('limit').innerText) || 95;
                 if (Math.floor(speed) <= cLim) notch = 0;
@@ -164,7 +159,7 @@
         }
 
         setInterval(() => {
-            if (isPaused) return;
+            if (isPaused || isStationProcess) return;
 
             if (notch > 0) {
                 speed += notch * PARAMS.accel_unit;
@@ -176,22 +171,17 @@
 
             if (speed < 0.1) {
                 if (speed > 0 && !hasStopped) { 
-                    checkStopJudgment(); 
-                    hasStopped = true; 
-                    stopPos = currentPos; // 停車位置を記録
+                    hasStopped = true;
+                    processArrival();
                 }
                 speed = 0;
-            } else {
-                // 発車して100m以上進んだら判定を消す
-                if (hasStopped && (currentPos - stopPos) > 100) {
-                    document.getElementById('judgment').innerText = "";
-                }
+            } else if (speed >= 0.5) {
+                hasStopped = false;
             }
             
             currentPos += (speed / 3.6) * (PARAMS.refresh_ms / 1000);
             let nextS = STATIONS[nextStationIdx], dNext = nextS.dist - currentPos;
             
-            // 制限予告ロジック
             let cLimit = 95;
             let nLimit = "--";
             let nLimDist = "--";
@@ -202,7 +192,7 @@
 
             document.getElementById('speed').innerText = Math.floor(speed);
             document.getElementById('limit').innerText = cLimit;
-            document.getElementById('next-limit-val').innerText = nLimit + "km/h";
+            document.getElementById('next-limit-val').innerText = nLimit + (nLimit === "終了" ? "" : "km/h");
             document.getElementById('next-limit-dist').innerText = nLimDist;
             document.getElementById('next-name').innerText = nextS.name;
 
@@ -211,20 +201,30 @@
             else { distEl.innerText = Math.floor(dNext) + " m"; distEl.style.color = ""; }
 
             if (Math.floor(speed) > cLimit && notch !== -9) { notch = -9; updateUI(); }
-
-            if (dNext < -10 && nextStationIdx < STATIONS.length - 1) {
-                nextStationIdx++;
-                hasStopped = true; // 次の駅への移動中も判定維持フラグとして利用
-            }
         }, PARAMS.refresh_ms);
 
-        function checkStopJudgment() {
+        function processArrival() {
+            isStationProcess = true;
             let diff = Math.abs(STATIONS[nextStationIdx].dist - currentPos) * 100;
-            let judgeEl = document.getElementById('judgment');
-            if (diff < 15) { judgeEl.innerText = "EXCELLENT"; judgeEl.style.color = "#00ffff"; }
-            else if (diff < 40) { judgeEl.innerText = "GREAT"; judgeEl.style.color = "var(--accel-color)"; }
-            else if (diff < 150) { judgeEl.innerText = "GOOD"; judgeEl.style.color = "var(--btn-text)"; }
-            else { judgeEl.innerText = "BAD"; judgeEl.style.color = "var(--eb-color)"; }
+            let resultText = "";
+
+            if (diff < 15) { resultText = "EXCELLENT"; }
+            else if (diff < 40) { resultText = "GREAT"; }
+            else if (diff < 150) { resultText = "GOOD"; }
+            else { resultText = "BAD"; }
+
+            setTimeout(() => {
+                alert("結果は " + resultText + " です (" + (diff/100).toFixed(2) + "m)");
+                
+                if (nextStationIdx < STATIONS.length - 1) {
+                    nextStationIdx++;
+                    notch = -5;
+                    updateUI();
+                    isStationProcess = false;
+                } else {
+                    alert("終点 桜島に到着しました。お疲れ様でした！");
+                }
+            }, 2000);
         }
         updateUI();
     </script>
