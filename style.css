@@ -45,9 +45,9 @@ body.is-paused::after {
 
 #next-limit-val { font-size: 1.4rem; color: #ff3333; }
 
-/* 予告距離を少しだけ小さく微調整 */
+/* 予告距離をさらに控えめに微調整 */
 #next-limit-dist { 
-    font-size: 2.2rem !important; 
+    font-size: 1.6rem !important; 
     color: #ff4444;
     line-height: 1.2;
     margin-top: 5px;
@@ -55,8 +55,8 @@ body.is-paused::after {
 }
 #next-limit-dist::after {
     content: "m";
-    font-size: 1rem;
-    margin-left: 4px;
+    font-size: 0.9rem;
+    margin-left: 3px;
 }
 
 .center-dash { 
