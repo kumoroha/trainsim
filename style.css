@@ -17,6 +17,19 @@ body {
     display: flex; flex-direction: column; position: relative;
 }
 
+/* 信号機スタイル */
+.signal-unit {
+    position: absolute; top: 15px; left: 15px; background: #222; 
+    border: 2px solid #444; padding: 5px; border-radius: 5px; z-index: 2500;
+}
+.signal-lamps { display: flex; gap: 5px; margin-bottom: 3px; }
+.lamp { width: 15px; height: 15px; border-radius: 50%; background: #111; border: 1px solid #333; }
+.signal-label { font-size: 0.6rem; text-align: center; font-weight: bold; color: #aaa; }
+/* 信号色定義 */
+.lamp.green { background: #00ff00; box-shadow: 0 0 10px #00ff00; }
+.lamp.yellow { background: #ffff00; box-shadow: 0 0 10px #ffff00; }
+.lamp.red { background: #ff0000; box-shadow: 0 0 10px #ff0000; }
+
 body.is-paused::after {
     content: "PAUSE"; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: var(--pause-bg); display: flex; align-items: center; justify-content: center;
@@ -29,72 +42,24 @@ body.is-paused::after {
 .display-container { flex: 1; display: grid; grid-template-columns: 1.3fr 2fr 1.3fr; padding: 0 20px; align-items: center; gap: 15px; }
 
 .limit-area { display: flex; flex-direction: column; gap: 8px; }
-.limit-main { display: flex; flex-direction: column; }
-.limit-speed { color: #ff3333; font-size: 4.5rem; font-weight: bold; line-height: 1; text-shadow: 0 0 10px rgba(255,0,0,0.3); }
+.limit-speed { color: #ff3333; font-size: 4.5rem; font-weight: bold; line-height: 1; }
+.limit-next { background: rgba(255,68,68,0.15); border-left: 5px solid #ff4444; padding: 10px 12px; font-size: 1.1rem; color: #ffaaaa; font-weight: bold; border-radius: 0 8px 8px 0; }
+#next-limit-dist { font-size: 1.6rem !important; color: #ff4444; line-height: 1.2; margin-top: 5px; display: block; }
+#next-limit-dist::after { content: "m"; font-size: 0.9rem; margin-left: 3px; }
 
-.limit-next { 
-    background: rgba(255,68,68,0.15); 
-    border-left: 5px solid #ff4444; 
-    padding: 10px 12px; 
-    font-size: 1.1rem; 
-    color: #ffaaaa; 
-    font-weight: bold; 
-    border-radius: 0 8px 8px 0;
-    line-height: 1.2;
-}
-
-#next-limit-val { font-size: 1.4rem; color: #ff3333; }
-
-#next-limit-dist { 
-    font-size: 1.6rem !important; 
-    color: #ff4444;
-    line-height: 1.2;
-    margin-top: 5px;
-    display: block;
-}
-#next-limit-dist::after {
-    content: "m";
-    font-size: 0.9rem;
-    margin-left: 3px;
-}
-
-.center-dash { 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    justify-content: center; 
-    gap: 45px; 
-}
-
-#notch-text { font-size: 3.5rem; font-weight: bold; line-height: 1; }
+.center-dash { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 45px; }
+#notch-text { font-size: 3.5rem; font-weight: bold; }
 .main-speed { font-size: 10rem; font-weight: 800; line-height: 0.75; letter-spacing: -2px; margin: 10px 0; }
-.speed-unit { font-size: 2.2rem; color: #555; margin-left: 5px; }
+.speed-unit { font-size: 2.2rem; color: #555; }
 
-/* ゲージコンテナ */
-.meter-container { 
-    width: 100%; 
-    height: 35px; 
-    background: #222; 
-    border-radius: 10px; 
-    border: 3px solid #555; 
-    overflow: hidden; 
-    position: relative;
-}
-
-/* ゲージ本体（中心Nから左右に伸びる） */
-#notch-bar { 
-    height: 100%; 
-    width: 0%; 
-    position: absolute;
-    left: 50%; /* 中央スタート */
-    transition: width 0.1s, left 0.1s, background-color 0.2s; 
-}
+/* メーターを1本化 */
+.meter-container { width: 100%; height: 35px; background: #222; border-radius: 10px; border: 3px solid #555; overflow: hidden; }
+#notch-bar { height: 100%; width: 0%; transition: width 0.1s, background-color 0.2s; }
 
 .right-info { text-align: right; display: flex; flex-direction: column; gap: 8px; }
-.train-info-small { font-size: 1rem; font-weight: bold; opacity: 0.8; }
-#distance { font-size: 3.2rem; font-weight: bold; margin-top: 5px; }
+#distance { font-size: 3.2rem; font-weight: bold; }
 
-.control-container { height: 260px; display: flex; align-items: center; justify-content: center; gap: 15px; padding: 10px 15px 40px 15px; box-sizing: border-box; flex-shrink: 0; }
+.control-container { height: 260px; display: flex; align-items: center; justify-content: center; gap: 15px; padding: 10px 15px 40px 15px; box-sizing: border-box; }
 .notch-btn { flex: 1; background: var(--panel-color); color: var(--btn-text); border: 3px solid #666; border-radius: 20px; font-size: 2.2rem; font-weight: bold; height: 100%; }
-.eb-btn-small { width: 120px; height: 120px; background: #aa0000; border: 5px solid #440000; border-radius: 50%; color: white; font-size: 1.8rem; font-weight: 900; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 0 #550000; flex-shrink: 0; margin-bottom: 20px; z-index: 10; }
-.eb-btn-small.eb-on { background: #ff0000; box-shadow: 0 0 30px #ff0000; border-color: #ffaaaa; transform: scale(1.05); }
+.eb-btn-small { width: 120px; height: 120px; background: #aa0000; border: 5px solid #440000; border-radius: 50%; color: white; font-size: 1.8rem; font-weight: 900; box-shadow: 0 6px 0 #550000; }
+.eb-btn-small.eb-on { background: #ff0000; box-shadow: 0 0 30px #ff0000; border-color: #ffaaaa; }
