@@ -13,40 +13,45 @@
             --bg-color: #f0f0f0; --panel-color: #ffffff; --text-color: #222222; --btn-text: #222222;
         }
 
-        /* ズーム、スクロール、選択をすべて禁止 */
+        /* ズーム・スクロール・ダブルタップを徹底排除 */
+        html, body {
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            position: fixed; /* 画面の揺れ防止 */
+        }
         * { 
             touch-action: none !important; 
             -webkit-text-size-adjust: none; 
             user-select: none; 
             -webkit-user-select: none;
-            outline: none;
         }
         
         body {
             margin: 0; padding: 0; background-color: var(--bg-color); color: var(--text-color);
-            font-family: 'Segoe UI', sans-serif; overflow: hidden; height: 100dvh; width: 100vw;
-            display: flex; flex-direction: column; position: relative;
+            font-family: 'Segoe UI', sans-serif; height: 100dvh; width: 100vw;
+            display: flex; flex-direction: column;
         }
         
-        .header-area { height: 55px; display: flex; justify-content: flex-end; align-items: center; padding: 0 20px; gap: 10px; flex-shrink: 0; }
-        .util-btn { background: var(--panel-color); color: var(--text-color); border: 2px solid #555; padding: 6px 12px; border-radius: 8px; font-size: 0.9rem; font-weight: 900; }
+        .header-area { height: 50px; display: flex; justify-content: flex-end; align-items: center; padding: 0 20px; gap: 10px; flex-shrink: 0; }
+        .util-btn { background: var(--panel-color); color: var(--text-color); border: 2px solid #555; padding: 5px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; }
         
-        .display-container { flex: 1; display: grid; grid-template-columns: 1fr 2fr 1fr; padding: 0 25px; align-items: center; min-height: 0; }
-        .limit-speed { color: #ff4444; font-size: 4.2rem; font-weight: bold; line-height: 1; }
-        .center-dash { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
-        #notch-text { font-size: 3.5rem; font-weight: bold; line-height: 1; }
-        .main-speed { font-size: 10rem; font-weight: 800; line-height: 0.75; }
-        .speed-unit { font-size: 2rem; color: #666; }
-        .meter-container { width: 100%; height: 24px; background: #333; border-radius: 6px; border: 2px solid #555; overflow: hidden; }
+        .display-container { flex: 1; display: grid; grid-template-columns: 1fr 2fr 1fr; padding: 0 20px; align-items: center; min-height: 0; }
+        .limit-speed { color: #ff4444; font-size: 4rem; font-weight: bold; line-height: 1; }
+        .center-dash { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; }
+        #notch-text { font-size: 3rem; font-weight: bold; line-height: 1; }
+        .main-speed { font-size: 9rem; font-weight: 800; line-height: 0.75; }
+        .speed-unit { font-size: 1.8rem; color: #666; }
+        .meter-container { width: 100%; height: 20px; background: #333; border-radius: 4px; border: 2px solid #555; overflow: hidden; }
         #notch-bar { height: 100%; width: 0%; transition: width 0.1s; }
         
-        .right-info { text-align: right; display: flex; flex-direction: column; gap: 4px; }
-        #judgment { font-size: 2.2rem; font-weight: 900; height: 2.4rem; margin-top: 5px; }
+        .right-info { text-align: right; display: flex; flex-direction: column; gap: 2px; }
+        #judgment { font-size: 2rem; font-weight: 900; height: 2.2rem; }
         
-        .control-container { height: 220px; display: flex; align-items: center; justify-content: center; gap: 15px; padding: 10px 20px 30px 20px; box-sizing: border-box; flex-shrink: 0; }
-        .notch-btn { flex: 1; background: var(--panel-color); color: var(--btn-text); border: 2px solid #555; border-radius: 20px; font-size: 2.8rem; font-weight: bold; height: 100%; }
-        .eb-btn-small { width: 85px; height: 85px; background: #aa0000; border: 4px solid #440000; border-radius: 50%; color: white; font-size: 1.4rem; font-weight: 900; display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 0 #550000; flex-shrink: 0; margin-bottom: 20px; }
-        .eb-btn-small.eb-on { background: #ff0000; box-shadow: 0 0 25px #ff0000; border-color: #ffaaaa; transform: scale(1.05); }
+        .control-container { height: 200px; display: flex; align-items: center; justify-content: center; gap: 15px; padding: 10px 20px 25px 20px; box-sizing: border-box; flex-shrink: 0; }
+        .notch-btn { flex: 1; background: var(--panel-color); color: var(--btn-text); border: 2px solid #555; border-radius: 15px; font-size: 2.4rem; font-weight: bold; height: 100%; }
+        .eb-btn-small { width: 80px; height: 80px; background: #aa0000; border: 4px solid #440000; border-radius: 50%; color: white; font-size: 1.4rem; font-weight: 900; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 0 #550000; flex-shrink: 0; margin-bottom: 10px; }
+        .eb-btn-small.eb-on { background: #ff0000; box-shadow: 0 0 20px #ff0000; border-color: #ffaaaa; transform: scale(1.02); }
     </style>
 </head>
 <body ontouchstart="">
@@ -57,38 +62,29 @@
     </div>
     <div class="display-container">
         <div class="info-box">
-            <span style="font-size:1.2rem; color:#888; font-weight: bold;">制限</span>
+            <span style="font-size:1.1rem; color:#888; font-weight: bold;">制限</span><br>
             <span id="limit" class="limit-speed">--</span>
         </div>
         <div class="center-dash">
             <div id="notch-text">N</div>
-            <div class="main-speed"><span id="speed">0</span><span class="speed-unit"> km/h</span></div>
+            <div class="main-speed"><span id="speed">0</span><span class="speed-unit">km/h</span></div>
             <div class="meter-container"><div id="notch-bar"></div></div>
         </div>
         <div class="right-info">
-            <div style="color:var(--accel-color); font-weight:bold; font-size: 1.6rem;">NEXT: <span id="next-name">---</span></div>
+            <div style="color:var(--accel-color); font-weight:bold; font-size: 1.4rem;">NEXT: <span id="next-name">---</span></div>
+            <div style="color:var(--brake-color); font-weight:bold; font-size: 1.2rem;">9431M Expo Liner</div>
             <div id="judgment"></div>
-            <div id="distance" style="font-size: 2.8rem; margin-top:4px; font-weight: bold;">-- m</div>
+            <div id="distance" style="font-size: 2.5rem; font-weight: bold;">-- m</div>
         </div>
     </div>
     <div class="control-container">
-        <button class="notch-btn" onpointerdown="changeNotch(1)">▲ 加速</button>
+        <button class="notch-btn" onpointerdown="changeNotch(1)">▲加速</button>
         <button id="eb-btn" class="eb-btn-small" onpointerdown="handleEB()">EB</button>
-        <button class="notch-btn" onpointerdown="changeNotch(-1)">▼ 減速</button>
+        <button class="notch-btn" onpointerdown="changeNotch(-1)">▼減速</button>
     </div>
 
     <script>
-        // 【ズーム禁止の極致】ダブルタップをJavaScriptレベルで遮断
-        let lastTouchTime = 0;
-        document.addEventListener('touchstart', (e) => {
-            const now = Date.now();
-            if (now - lastTouchTime < 300 || e.touches.length > 1) {
-                e.preventDefault(); // 2回目以降のタップやマルチタッチを無効化
-            }
-            lastTouchTime = now;
-        }, { passive: false });
-
-        const PARAMS = { accel_power: 0.04, brake_power: 0.08, eb_power: 0.15, friction: 0.003, refresh_ms: 50 };
+        const PARAMS = { accel_power: 0.04, brake_power: 0.08, eb_power: 0.16, friction: 0.003, refresh_ms: 50 };
         const STATIONS = [{ name: "大阪", dist: 0 }, { name: "西九条", dist: 3800 }, { name: "安治川口", dist: 5400 }, { name: "ユニバーサルシティ", dist: 6600 }, { name: "桜島", dist: 7800 }];
         
         let speed = 0, currentPos = 0, notch = -5, isPaused = false, nextStationIdx = 1, lastNotch = 0, hasStopped = false;
@@ -103,25 +99,45 @@
 
         function toggleTheme() { document.body.classList.toggle('light-mode'); }
         function togglePause() { isPaused = !isPaused; document.getElementById('pause-btn').innerText = isPaused ? 'Resume' : 'Pause'; }
-        function changeNotch(val) { if (isPaused || notch === -9) return; notch += val; if (notch > 5) notch = 5; if (notch < -8) notch = -8; updateUI(); }
+        
+        function changeNotch(val) { 
+            if (isPaused || notch === -9) return; 
+            notch += val; 
+            if (notch > 5) notch = 5; 
+            if (notch < -8) notch = -8; 
+            updateUI(); 
+        }
 
         function handleEB() {
             if (isPaused) return;
-            let currentLimit = parseInt(document.getElementById('limit').innerText);
-            if (notch === -9) { if (speed <= currentLimit || speed === 0) { notch = lastNotch; } }
-            else { lastNotch = notch; notch = -9; }
+            let currentLimit = parseInt(document.getElementById('limit').innerText) || 95;
+            if (notch === -9) {
+                // 解除：速度が制限以下の時
+                if (speed <= currentLimit || speed === 0) { notch = lastNotch; }
+            } else {
+                lastNotch = notch; 
+                notch = -9;
+            }
             updateUI();
         }
 
         function updateUI() {
             const bar = document.getElementById('notch-bar'), txt = document.getElementById('notch-text'), ebBtn = document.getElementById('eb-btn');
             if (notch === -9) {
-                bar.style.width = "100%"; bar.style.backgroundColor = "var(--eb-color)"; txt.innerText = "EB"; txt.style.color = "var(--eb-color)"; ebBtn.classList.add('eb-on');
+                bar.style.width = "100%"; bar.style.backgroundColor = "var(--eb-color)"; 
+                txt.innerText = "EB"; txt.style.color = "var(--eb-color)"; 
+                ebBtn.classList.add('eb-on');
             } else {
                 ebBtn.classList.remove('eb-on');
-                if (notch > 0) { bar.style.width = (notch/5)*100+"%"; bar.style.backgroundColor = "var(--accel-color)"; txt.innerText = "P"+notch; txt.style.color = "var(--accel-color)"; }
-                else if (notch < 0) { bar.style.width = (Math.abs(notch)/8)*100+"%"; bar.style.backgroundColor = "var(--brake-color)"; txt.innerText = "B"+Math.abs(notch); txt.style.color = "var(--brake-color)"; }
-                else { bar.style.width = "0%"; txt.innerText = "N"; txt.style.color = "var(--text-color)"; }
+                if (notch > 0) { 
+                    bar.style.width = (notch/5)*100+"%"; bar.style.backgroundColor = "var(--accel-color)"; 
+                    txt.innerText = "P"+notch; txt.style.color = "var(--accel-color)"; 
+                } else if (notch < 0) { 
+                    bar.style.width = (Math.abs(notch)/8)*100+"%"; bar.style.backgroundColor = "var(--brake-color)"; 
+                    txt.innerText = "B"+Math.abs(notch); txt.style.color = "var(--brake-color)"; 
+                } else { 
+                    bar.style.width = "0%"; txt.innerText = "N"; txt.style.color = "var(--text-color)"; 
+                }
             }
         }
 
@@ -131,37 +147,36 @@
             if (notch > 0) {
                 speed += notch * PARAMS.accel_power;
             } else if (notch < 0) {
-                let gripFactor = (speed < 10) ? (1.5 - (speed / 20)) : 1.0;
+                let grip = (speed < 10) ? (1.6 - (speed / 15)) : 1.0;
                 let bPower = (notch === -9) ? PARAMS.eb_power : (PARAMS.brake_power / 8);
-                speed += notch * bPower * gripFactor;
+                speed += notch * bPower * grip;
             }
             speed -= PARAMS.friction;
 
             if (speed < 0.1) {
                 if (speed > 0 && !hasStopped) { checkStopJudgment(); hasStopped = true; }
                 speed = 0;
-            } else if (speed >= 0.3) { // 動き出したら判定を完全に消す
-                const j = document.getElementById('judgment');
-                if (j.innerText !== "") j.innerText = "";
+            } else if (speed >= 0.5) {
+                document.getElementById('judgment').innerText = "";
                 hasStopped = false;
             }
             
             currentPos += (speed / 3.6) * (PARAMS.refresh_ms / 1000);
-            let nextStation = STATIONS[nextStationIdx], distToNext = nextStation.dist - currentPos;
-            let currentLimit = (distToNext < 300) ? 25 : (distToNext < 800) ? 45 : 95;
+            let nextS = STATIONS[nextStationIdx], dNext = nextS.dist - currentPos;
+            let cLimit = (dNext < 300) ? 25 : (dNext < 800) ? 45 : 95;
 
             document.getElementById('speed').innerText = Math.floor(speed);
-            document.getElementById('limit').innerText = currentLimit;
-            document.getElementById('next-name').innerText = nextStation.name;
+            document.getElementById('limit').innerText = cLimit;
+            document.getElementById('next-name').innerText = nextS.name;
 
             const distEl = document.getElementById('distance');
-            if (Math.abs(distToNext) <= 5) { distEl.innerText = (distToNext * 100).toFixed(1) + " cm"; distEl.style.color = "#fff"; }
-            else { distEl.innerText = Math.floor(distToNext) + " m"; distEl.style.color = ""; }
+            if (Math.abs(dNext) <= 5) { distEl.innerText = (dNext * 100).toFixed(1) + " cm"; distEl.style.color = "#fff"; }
+            else { distEl.innerText = Math.floor(dNext) + " m"; distEl.style.color = ""; }
 
-            if (speed > currentLimit && notch !== -9) { lastNotch = notch; notch = -9; updateUI(); }
-            if (notch === -9 && speed <= currentLimit - 20 && speed > 0) { notch = lastNotch; updateUI(); }
+            if (speed > cLimit && notch !== -9) { lastNotch = notch; notch = -9; updateUI(); }
+            if (notch === -9 && speed <= cLimit - 20 && speed > 0) { notch = lastNotch; updateUI(); }
 
-            if (distToNext < -10 && nextStationIdx < STATIONS.length - 1) {
+            if (dNext < -10 && nextStationIdx < STATIONS.length - 1) {
                 nextStationIdx++;
                 document.getElementById('judgment').innerText = "";
                 hasStopped = false;
@@ -169,12 +184,11 @@
         }, PARAMS.refresh_ms);
 
         function checkStopJudgment() {
-            if (speed > 1.0) return; 
             let diff = Math.abs(STATIONS[nextStationIdx].dist - currentPos) * 100;
             let judgeEl = document.getElementById('judgment');
-            if (diff < 10) { judgeEl.innerText = "EXCELLENT"; judgeEl.style.color = "#00ffff"; }
-            else if (diff < 30) { judgeEl.innerText = "GREAT"; judgeEl.style.color = "var(--accel-color)"; }
-            else if (diff < 100) { judgeEl.innerText = "GOOD"; judgeEl.style.color = "#fff"; }
+            if (diff < 15) { judgeEl.innerText = "EXCELLENT"; judgeEl.style.color = "#00ffff"; }
+            else if (diff < 40) { judgeEl.innerText = "GREAT"; judgeEl.style.color = "var(--accel-color)"; }
+            else if (diff < 150) { judgeEl.innerText = "GOOD"; judgeEl.style.color = "#fff"; }
             else { judgeEl.innerText = "BAD"; judgeEl.style.color = "var(--eb-color)"; }
         }
         updateUI();
