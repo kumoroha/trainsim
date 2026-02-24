@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Expo Liner Simulator 323 Spec</title>
+    <title>Expo Liner Simulator Pro 2.45</title>
     <style>
         :root {
             --bg-color: #050505; --panel-color: #1a1a1a; --text-color: #e0e0e0; --btn-text: #ffffff;
@@ -33,9 +33,14 @@
         .header-area { height: 60px; display: flex; justify-content: flex-end; align-items: center; padding: 0 15px; gap: 8px; flex-shrink: 0; z-index: 2100; }
         .util-btn { background: var(--panel-color); color: var(--text-color); border: 2.5px solid #666; padding: 8px 14px; border-radius: 10px; font-size: 0.9rem; font-weight: bold; }
         
-        .display-container { flex: 1; display: grid; grid-template-columns: 1fr 2fr 1fr; padding: 0 15px; align-items: center; gap: 10px; }
-        .limit-speed { color: #ff3333; font-size: 3.8rem; font-weight: bold; line-height: 1; }
+        .display-container { flex: 1; display: grid; grid-template-columns: 1.2fr 2fr 1fr; padding: 0 15px; align-items: center; gap: 5px; }
         
+        /* 制限予告エリア */
+        .limit-area { display: flex; flex-direction: column; gap: 5px; }
+        .limit-main { display: flex; flex-direction: column; }
+        .limit-speed { color: #ff3333; font-size: 3.8rem; font-weight: bold; line-height: 1; }
+        .limit-next { background: rgba(255,68,68,0.1); border-left: 3px solid #ff4444; padding: 4px 8px; font-size: 0.9rem; color: #ff8888; font-weight: bold; }
+
         .center-dash { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
         #notch-text { font-size: 3rem; font-weight: bold; line-height: 1; }
         .main-speed { font-size: 8rem; font-weight: 800; line-height: 0.75; }
@@ -44,7 +49,7 @@
         #notch-bar { height: 100%; width: 0%; transition: width 0.1s; }
         
         .right-info { text-align: right; display: flex; flex-direction: column; gap: 4px; }
-        #judgment { font-size: 1.8rem; font-weight: 900; height: 2rem; }
+        #judgment { font-size: 1.8rem; font-weight: 900; height: 2rem; transition: opacity 0.5s; }
         .train-info-small { font-size: 0.9rem; font-weight: bold; opacity: 0.8; }
         
         .control-container { height: 240px; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 10px 15px 30px 15px; box-sizing: border-box; flex-shrink: 0; }
@@ -60,9 +65,15 @@
         <button id="pause-btn" class="util-btn" onpointerdown="togglePause()">Pause</button>
     </div>
     <div class="display-container">
-        <div class="info-box">
-            <span style="font-size:1rem; font-weight: bold; opacity: 0.7;">制限</span><br>
-            <span id="limit" class="limit-speed">--</span>
+        <div class="limit-area">
+            <div class="limit-main">
+                <span style="font-size:0.9rem; font-weight: bold; opacity: 0.7;">現在の制限</span>
+                <span id="limit" class="limit-speed">--</span>
+            </div>
+            <div id="next-limit-box" class="limit-next">
+                NEXT <span id="next-limit-val">--</span><br>
+                あと <span id="next-limit-dist">--</span>m
+            </div>
         </div>
         <div class="center-dash">
             <div id="notch-text">N</div>
@@ -84,21 +95,20 @@
     </div>
 
     <script>
-        // 50ms (0.05s) あたりの減速度計算: 3.9km/h/s / 20 = 0.195
         const PARAMS = { 
-            accel_power: 0.045, 
-            brake_unit: 0.43, // B8で3.44km/h/s狙い
-            eb_power: 0.195,  // 実車データ 3.9km/h/s (0.195 per 50ms)
+            accel_unit: 0.028, 
+            brake_unit: 0.44,  
+            eb_power: 0.195,   
             friction: 0.003, 
             refresh_ms: 50 
         };
         const STATIONS = [{ name: "大阪", dist: 0 }, { name: "西九条", dist: 3800 }, { name: "安治川口", dist: 5400 }, { name: "ユニバーサルシティ", dist: 6600 }, { name: "桜島", dist: 7800 }];
         
-        let speed = 0, currentPos = 0, notch = -5, isPaused = false, nextStationIdx = 1, hasStopped = false;
+        let speed = 0, currentPos = 0, notch = -5, isPaused = false, nextStationIdx = 1, hasStopped = false, stopPos = 0;
 
         function resetGame() {
             if (confirm("最初からやり直しますか？")) {
-                speed = 0; currentPos = 0; notch = -5; nextStationIdx = 1; hasStopped = false;
+                speed = 0; currentPos = 0; notch = -5; nextStationIdx = 1; hasStopped = false; stopPos = 0;
                 document.getElementById('judgment').innerText = "";
                 updateUI();
             }
@@ -112,14 +122,12 @@
         
         function changeNotch(val) { 
             if (isPaused) return; 
-            if (val > 0) { // 加速
+            if (val > 0) { 
                 if (notch === -9) {
                     let cLim = parseInt(document.getElementById('limit').innerText) || 95;
                     if (Math.floor(speed) <= cLim) notch = -8;
-                } else {
-                    notch += val;
-                }
-            } else { // 減速
+                } else { notch += val; }
+            } else { 
                 notch += val;
                 if (notch < -9) notch = -9;
             }
@@ -159,41 +167,54 @@
             if (isPaused) return;
 
             if (notch > 0) {
-                speed += notch * PARAMS.accel_power;
+                speed += notch * PARAMS.accel_unit;
             } else if (notch < 0) {
-                // EBか常用ブレーキか
                 let decel = (notch === -9) ? PARAMS.eb_power : (Math.abs(notch) * (PARAMS.brake_unit / 8));
                 speed -= decel;
             }
             speed -= PARAMS.friction;
 
             if (speed < 0.1) {
-                if (speed > 0 && !hasStopped) { checkStopJudgment(); hasStopped = true; }
+                if (speed > 0 && !hasStopped) { 
+                    checkStopJudgment(); 
+                    hasStopped = true; 
+                    stopPos = currentPos; // 停車位置を記録
+                }
                 speed = 0;
-            } else if (speed >= 0.5) {
-                document.getElementById('judgment').innerText = "";
-                hasStopped = false;
+            } else {
+                // 発車して100m以上進んだら判定を消す
+                if (hasStopped && (currentPos - stopPos) > 100) {
+                    document.getElementById('judgment').innerText = "";
+                }
             }
             
             currentPos += (speed / 3.6) * (PARAMS.refresh_ms / 1000);
             let nextS = STATIONS[nextStationIdx], dNext = nextS.dist - currentPos;
-            let cLimit = (dNext < 300) ? 25 : (dNext < 800) ? 45 : 95;
+            
+            // 制限予告ロジック
+            let cLimit = 95;
+            let nLimit = "--";
+            let nLimDist = "--";
+
+            if (dNext < 300) { cLimit = 25; nLimit = "終了"; nLimDist = "停車"; }
+            else if (dNext < 800) { cLimit = 45; nLimit = "25"; nLimDist = Math.floor(dNext - 300); }
+            else { cLimit = 95; nLimit = "45"; nLimDist = Math.floor(dNext - 800); }
 
             document.getElementById('speed').innerText = Math.floor(speed);
             document.getElementById('limit').innerText = cLimit;
+            document.getElementById('next-limit-val').innerText = nLimit + "km/h";
+            document.getElementById('next-limit-dist').innerText = nLimDist;
             document.getElementById('next-name').innerText = nextS.name;
 
             const distEl = document.getElementById('distance');
             if (Math.abs(dNext) <= 5) { distEl.innerText = (dNext * 100).toFixed(1) + " cm"; distEl.style.color = "#fff"; }
             else { distEl.innerText = Math.floor(dNext) + " m"; distEl.style.color = ""; }
 
-            // 制限速度+1km/hでEB作動（制限ぴったりはOK）
             if (Math.floor(speed) > cLimit && notch !== -9) { notch = -9; updateUI(); }
 
             if (dNext < -10 && nextStationIdx < STATIONS.length - 1) {
                 nextStationIdx++;
-                document.getElementById('judgment').innerText = "";
-                hasStopped = false;
+                hasStopped = true; // 次の駅への移動中も判定維持フラグとして利用
             }
         }, PARAMS.refresh_ms);
 
