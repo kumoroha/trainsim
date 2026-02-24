@@ -76,7 +76,9 @@
     <script>
         document.addEventListener('touchstart', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
         
-        const PARAMS = { accel_power: 0.04, brake_power: 0.07, eb_power: 0.12, friction: 0.003, refresh_ms: 50 };
+        // 全体のブレーキ力を大幅に緩和 (B8: 0.07 -> 0.045, EB: 0.12 -> 0.065)
+        // これにより、これまでの常用ブレーキくらいの感覚でEBが効くようになります
+        const PARAMS = { accel_power: 0.04, brake_power: 0.045, eb_power: 0.065, friction: 0.003, refresh_ms: 50 };
         const STATIONS = [{ name: "大阪", dist: 0 }, { name: "西九条", dist: 3800 }, { name: "安治川口", dist: 5400 }, { name: "ユニバーサルシティ", dist: 6600 }, { name: "桜島", dist: 7800 }];
         
         let speed = 0, currentPos = 0, notch = -5, isPaused = false, nextStationIdx = 1, lastNotch = 0, hasStopped = false;
@@ -88,12 +90,9 @@
         function handleEB() {
             if (isPaused) return;
             let currentLimit = parseInt(document.getElementById('limit').innerText);
-            
             if (notch === -9) {
-                // 解除条件：速度が制限速度以下であれば、EBボタンで復帰可能
-                if (speed <= currentLimit || speed === 0) {
-                    notch = lastNotch;
-                }
+                // 解除条件：速度が制限以下なら即座に手動解除可能
+                if (speed <= currentLimit || speed === 0) { notch = lastNotch; }
             } else {
                 lastNotch = notch; notch = -9;
             }
@@ -115,7 +114,7 @@
         setInterval(() => {
             if (isPaused) return;
             if (notch > 0) speed += notch * PARAMS.accel_power; 
-            else if (notch < 0) speed += notch * ((notch === -9) ? PARAMS.eb_power : PARAMS.brake_power);
+            else if (notch < 0) speed += notch * ((notch === -9) ? PARAMS.eb_power : (PARAMS.brake_power/8)); // B1ごとの変化をより滑らかに
             speed -= PARAMS.friction;
 
             if (speed < 0.1) {
@@ -137,16 +136,10 @@
             if (Math.abs(distToNext) <= 5) { distEl.innerText = (distToNext * 100).toFixed(1) + " cm"; distEl.style.color = "#fff"; }
             else { distEl.innerText = Math.floor(distToNext) + " m"; distEl.style.color = ""; }
 
-            // スピード超過時の自動EB作動
-            if (speed > currentLimit && notch !== -9) {
-                lastNotch = notch; notch = -9; updateUI();
-            }
+            if (speed > currentLimit && notch !== -9) { lastNotch = notch; notch = -9; updateUI(); }
 
-            // 自動解除・復帰ロジック（制限速度 - 20km/h になったら自動で元のノッチに戻る）
-            if (notch === -9 && speed <= currentLimit - 20 && speed > 0) {
-                notch = lastNotch;
-                updateUI();
-            }
+            // 自動復帰（制限速度-20km/h以下）
+            if (notch === -9 && speed <= currentLimit - 20 && speed > 0) { notch = lastNotch; updateUI(); }
 
             if (distToNext < -10 && nextStationIdx < STATIONS.length - 1) {
                 nextStationIdx++; document.getElementById('judgment').innerText = "";
