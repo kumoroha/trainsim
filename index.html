@@ -3,10 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Train Simulator Pro 2.52</title>
+    <title>Train Simulator Pro 2.65</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body ontouchstart="">
+    <div class="signal-unit">
+        <div id="signal-lamps" class="signal-lamps">
+            <div id="lamp-r" class="lamp"></div>
+            <div id="lamp-y" class="lamp"></div>
+            <div id="lamp-g" class="lamp"></div>
+        </div>
+        <div id="signal-name" class="signal-label">第2閉塞</div>
+    </div>
+
     <div class="header-area">
         <div style="margin-right: auto; display: flex; align-items: baseline; gap: 10px; padding-left: 10px;">
             <span style="font-size: 0.8rem; font-weight: bold; opacity: 0.7;">NEXT ARRIVAL</span>
@@ -16,6 +25,7 @@
         <button class="util-btn" onpointerdown="toggleTheme()">Theme</button>
         <button id="pause-btn" class="util-btn" onpointerdown="togglePause()">Pause</button>
     </div>
+
     <div class="display-container">
         <div class="limit-area">
             <div class="limit-main">
@@ -30,7 +40,9 @@
         <div class="center-dash">
             <div id="notch-text">N</div>
             <div class="main-speed"><span id="speed">0</span><span class="speed-unit">km/h</span></div>
-            <div class="meter-container"><div id="notch-bar"></div></div>
+            <div class="meter-container">
+                <div id="notch-bar"></div>
+            </div>
         </div>
         <div class="right-info">
             <div style="color:var(--accel-color); font-weight:bold; font-size: 1.3rem;">NEXT: <span id="next-name">---</span></div>
@@ -39,6 +51,7 @@
             <div id="distance" style="font-size: 3.2rem; font-weight: bold;">-- m</div>
         </div>
     </div>
+
     <div class="control-container">
         <button class="notch-btn" onpointerdown="changeNotch(1)">▲ 加速</button>
         <button id="eb-btn" class="eb-btn-small" onpointerdown="handleEB()">EB</button>
