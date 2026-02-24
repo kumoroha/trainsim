@@ -5,9 +5,33 @@ const PARAMS = {
     friction: 0.003, 
     refresh_ms: 50 
 };
-const STATIONS = [{ name: "大阪", dist: 0 }, { name: "西九条", dist: 3800 }, { name: "安治川口", dist: 5400 }, { name: "ユニバーサルシティ", dist: 6600 }, { name: "桜島", dist: 7800 }];
+
+// 実際のJRダイヤに基づく所要時間（大阪発車を0秒とする）
+const STATIONS = [
+    { name: "大阪", dist: 0, arrivalSec: 0 },
+    { name: "西九条", dist: 3800, arrivalSec: 360 },       // 約6分
+    { name: "安治川口", dist: 5400, arrivalSec: 570 },     // 約9分30秒
+    { name: "ユニバーサルシティ", dist: 6600, arrivalSec: 690 }, // 約11分30秒
+    { name: "桜島", dist: 7800, arrivalSec: 810 }         // 約13分30秒
+];
 
 let speed = 0, currentPos = 0, notch = -5, isPaused = false, nextStationIdx = 1, hasStopped = false, isStationProcess = false;
+let startTime = null;
+let elapsedTime = 0;
+
+// 運行時間の更新
+function updateClock() {
+    if (isPaused || isStationProcess) return;
+    if (startTime === null && speed > 0) startTime = Date.now(); // 初回発車時に計測開始
+    
+    if (startTime !== null) {
+        elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+        const m = String(Math.floor(elapsedTime / 60)).padStart(2, '0');
+        const s = String(elapsedTime % 60).padStart(2, '0');
+        document.getElementById('clock').innerText = `${m}:${s}`;
+    }
+}
+setInterval(updateClock, 1000);
 
 function resetGame() {
     if (confirm("最初からやり直しますか？")) {
@@ -114,16 +138,30 @@ setInterval(() => {
 
 function processArrival() {
     isStationProcess = true;
-    let diff = Math.abs(STATIONS[nextStationIdx].dist - currentPos) * 100;
-    let resultText = "";
+    let stopDistDiff = Math.abs(STATIONS[nextStationIdx].dist - currentPos) * 100;
+    
+    // 時間差の計算
+    let targetSec = STATIONS[nextStationIdx].arrivalSec;
+    let timeDiff = elapsedTime - targetSec;
+    let timeResult = "";
+    if (timeDiff === 0) timeResult = "定時";
+    else if (timeDiff > 0) timeResult = `${timeDiff}秒 延着`;
+    else if (timeDiff < 0) timeResult = `${Math.abs(timeDiff)}秒 早着`;
 
-    if (diff < 15) { resultText = "EXCELLENT"; }
-    else if (diff < 40) { resultText = "GREAT"; }
-    else if (diff < 150) { resultText = "GOOD"; }
-    else { resultText = "BAD"; }
+    let resultText = "";
+    if (stopDistDiff < 15) resultText = "EXCELLENT";
+    else if (stopDistDiff < 40) resultText = "GREAT";
+    else if (stopDistDiff < 150) resultText = "GOOD";
+    else resultText = "BAD";
 
     setTimeout(() => {
-        alert("結果は " + resultText + " です (" + (diff/100).toFixed(2) + "m)");
+        alert(
+            `【停車判定】\n` +
+            `結果: ${resultText}\n` +
+            `誤差: ${(stopDistDiff/100).toFixed(2)}m\n\n` +
+            `【ダイヤ判定】\n` +
+            `結果: ${timeResult}`
+        );
         
         if (nextStationIdx < STATIONS.length - 1) {
             nextStationIdx++;
@@ -132,7 +170,7 @@ function processArrival() {
             isStationProcess = false;
             hasStopped = false;
         } else {
-            alert("終点 桜島に到着しました。お疲れ様でした！");
+            alert("終点 桜島に到着しました。定時運行へのご協力ありがとうございました！");
         }
     }, 2000);
 }
