@@ -13,13 +13,8 @@
             --bg-color: #f0f0f0; --panel-color: #ffffff; --text-color: #222222; --btn-text: #222222;
         }
 
-        /* ズーム・スクロール・ダブルタップを徹底排除 */
-        html, body {
-            overflow: hidden;
-            width: 100%;
-            height: 100%;
-            position: fixed; /* 画面の揺れ防止 */
-        }
+        /* 拡大・スクロール・選択の完全禁止 */
+        html, body { overflow: hidden; width: 100%; height: 100%; position: fixed; }
         * { 
             touch-action: none !important; 
             -webkit-text-size-adjust: none; 
@@ -33,25 +28,32 @@
             display: flex; flex-direction: column;
         }
         
-        .header-area { height: 50px; display: flex; justify-content: flex-end; align-items: center; padding: 0 20px; gap: 10px; flex-shrink: 0; }
-        .util-btn { background: var(--panel-color); color: var(--text-color); border: 2px solid #555; padding: 5px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; }
+        /* ヘッダーボタンを少し大きく */
+        .header-area { height: 60px; display: flex; justify-content: flex-end; align-items: center; padding: 0 15px; gap: 8px; flex-shrink: 0; }
+        .util-btn { background: var(--panel-color); color: var(--text-color); border: 2.5px solid #555; padding: 8px 14px; border-radius: 10px; font-size: 1rem; font-weight: bold; }
         
-        .display-container { flex: 1; display: grid; grid-template-columns: 1fr 2fr 1fr; padding: 0 20px; align-items: center; min-height: 0; }
-        .limit-speed { color: #ff4444; font-size: 4rem; font-weight: bold; line-height: 1; }
-        .center-dash { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; }
-        #notch-text { font-size: 3rem; font-weight: bold; line-height: 1; }
-        .main-speed { font-size: 9rem; font-weight: 800; line-height: 0.75; }
+        /* メイン表示エリアの調整 */
+        .display-container { flex: 1; display: grid; grid-template-columns: 1fr 2fr 1fr; padding: 0 15px; align-items: center; min-height: 0; gap: 10px; }
+        .limit-speed { color: #ff4444; font-size: 3.8rem; font-weight: bold; line-height: 1; }
+        
+        /* 計器・バー・ノッチ表示の分離 */
+        .center-dash { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 25px; }
+        #notch-text { font-size: 3.2rem; font-weight: bold; line-height: 1; margin-bottom: 5px; }
+        .main-speed { font-size: 8.5rem; font-weight: 800; line-height: 0.7; margin-bottom: 10px; }
         .speed-unit { font-size: 1.8rem; color: #666; }
-        .meter-container { width: 100%; height: 20px; background: #333; border-radius: 4px; border: 2px solid #555; overflow: hidden; }
+        .meter-container { width: 90%; height: 26px; background: #333; border-radius: 6px; border: 2px solid #555; overflow: hidden; }
         #notch-bar { height: 100%; width: 0%; transition: width 0.1s; }
         
-        .right-info { text-align: right; display: flex; flex-direction: column; gap: 2px; }
-        #judgment { font-size: 2rem; font-weight: 900; height: 2.2rem; }
+        /* 区間表示の復活 */
+        .right-info { text-align: right; display: flex; flex-direction: column; gap: 3px; }
+        #judgment { font-size: 1.8rem; font-weight: 900; height: 2rem; }
+        .train-info-small { color: #888; font-size: 1rem; font-weight: bold; }
         
-        .control-container { height: 200px; display: flex; align-items: center; justify-content: center; gap: 15px; padding: 10px 20px 25px 20px; box-sizing: border-box; flex-shrink: 0; }
-        .notch-btn { flex: 1; background: var(--panel-color); color: var(--btn-text); border: 2px solid #555; border-radius: 15px; font-size: 2.4rem; font-weight: bold; height: 100%; }
-        .eb-btn-small { width: 80px; height: 80px; background: #aa0000; border: 4px solid #440000; border-radius: 50%; color: white; font-size: 1.4rem; font-weight: 900; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 0 #550000; flex-shrink: 0; margin-bottom: 10px; }
-        .eb-btn-small.eb-on { background: #ff0000; box-shadow: 0 0 20px #ff0000; border-color: #ffaaaa; transform: scale(1.02); }
+        /* 操作ボタンの大型化（はみ出さないギリギリを攻める） */
+        .control-container { height: 230px; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 5px 15px 25px 15px; box-sizing: border-box; flex-shrink: 0; }
+        .notch-btn { flex: 1; background: var(--panel-color); color: var(--btn-text); border: 3px solid #666; border-radius: 20px; font-size: 3.2rem; font-weight: bold; height: 90%; max-height: 180px; }
+        .eb-btn-small { width: 100px; height: 100px; background: #aa0000; border: 5px solid #440000; border-radius: 50%; color: white; font-size: 1.6rem; font-weight: 900; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 0 #550000; flex-shrink: 0; margin-bottom: 15px; }
+        .eb-btn-small.eb-on { background: #ff0000; box-shadow: 0 0 30px #ff0000; border-color: #ffaaaa; transform: scale(1.05); }
     </style>
 </head>
 <body ontouchstart="">
@@ -71,16 +73,17 @@
             <div class="meter-container"><div id="notch-bar"></div></div>
         </div>
         <div class="right-info">
-            <div style="color:var(--accel-color); font-weight:bold; font-size: 1.4rem;">NEXT: <span id="next-name">---</span></div>
-            <div style="color:var(--brake-color); font-weight:bold; font-size: 1.2rem;">9431M Expo Liner</div>
+            <div style="color:var(--accel-color); font-weight:bold; font-size: 1.3rem;">NEXT: <span id="next-name">---</span></div>
+            <div style="color:var(--brake-color); font-weight:bold; font-size: 1.1rem;">9431M Expo Liner</div>
+            <div class="train-info-small">Osaka → Sakurajima</div>
             <div id="judgment"></div>
-            <div id="distance" style="font-size: 2.5rem; font-weight: bold;">-- m</div>
+            <div id="distance" style="font-size: 2.6rem; font-weight: bold;">-- m</div>
         </div>
     </div>
     <div class="control-container">
-        <button class="notch-btn" onpointerdown="changeNotch(1)">▲加速</button>
+        <button class="notch-btn" onpointerdown="changeNotch(1)">▲</button>
         <button id="eb-btn" class="eb-btn-small" onpointerdown="handleEB()">EB</button>
-        <button class="notch-btn" onpointerdown="changeNotch(-1)">▼減速</button>
+        <button class="notch-btn" onpointerdown="changeNotch(-1)">▼</button>
     </div>
 
     <script>
@@ -96,15 +99,13 @@
                 updateUI();
             }
         }
-
         function toggleTheme() { document.body.classList.toggle('light-mode'); }
         function togglePause() { isPaused = !isPaused; document.getElementById('pause-btn').innerText = isPaused ? 'Resume' : 'Pause'; }
         
         function changeNotch(val) { 
             if (isPaused || notch === -9) return; 
             notch += val; 
-            if (notch > 5) notch = 5; 
-            if (notch < -8) notch = -8; 
+            if (notch > 5) notch = 5; if (notch < -8) notch = -8; 
             updateUI(); 
         }
 
@@ -112,11 +113,9 @@
             if (isPaused) return;
             let currentLimit = parseInt(document.getElementById('limit').innerText) || 95;
             if (notch === -9) {
-                // 解除：速度が制限以下の時
                 if (speed <= currentLimit || speed === 0) { notch = lastNotch; }
             } else {
-                lastNotch = notch; 
-                notch = -9;
+                lastNotch = notch; notch = -9;
             }
             updateUI();
         }
@@ -156,7 +155,7 @@
             if (speed < 0.1) {
                 if (speed > 0 && !hasStopped) { checkStopJudgment(); hasStopped = true; }
                 speed = 0;
-            } else if (speed >= 0.5) {
+            } else if (speed >= 0.4) {
                 document.getElementById('judgment').innerText = "";
                 hasStopped = false;
             }
