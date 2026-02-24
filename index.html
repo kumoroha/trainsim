@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Train Simulator 2.71</title>
+    <title>Train Simulator 2.75</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,27 +13,30 @@
             <div id="lamp-y" class="lamp"></div>
             <div id="lamp-g" class="lamp"></div>
         </div>
-        <div id="signal-name" class="signal-label">第3閉塞 (進行)</div>
+        <div id="signal-name" class="signal-label">第3閉塞</div>
     </div>
 
     <div class="header-area">
-        <div style="margin-right: auto; display: flex; align-items: baseline; gap: 15px;">
-            <span style="font-size: 1rem; font-weight: bold; opacity: 0.7;">NEXT ARRIVAL</span>
-            <div id="clock" style="font-family: monospace; font-size: 2.6rem; font-weight: bold; color: var(--accel-color);">WAIT...</div>
+        <div class="arrival-box">
+            <span class="label">NEXT ARRIVAL</span>
+            <div id="clock" class="time-val">WAIT...</div>
         </div>
-        <button class="util-btn reset-btn" onpointerdown="resetGame()">最初から</button>
-        <button id="pause-btn" class="util-btn" onpointerdown="togglePause()">Pause</button>
+        <div class="btn-group">
+            <button class="util-btn reset-btn" onpointerdown="resetGame()">最初から</button>
+            <button class="util-btn" onpointerdown="toggleTheme()">Theme</button>
+            <button id="pause-btn" class="util-btn" onpointerdown="togglePause()">Pause</button>
+        </div>
     </div>
 
     <div class="display-container">
         <div class="limit-area">
-            <div>
-                <div style="font-size:1.1rem; font-weight:bold; opacity:0.7;">現在の制限</div>
-                <div id="limit" class="limit-speed">--</div>
+            <div class="limit-current">
+                <span class="label-small">現在の制限</span>
+                <div id="limit" class="speed-val">--</div>
             </div>
-            <div class="limit-next">
-                NEXT <span id="next-limit-val">--</span> km/h<br>
-                あと <span id="next-limit-dist">--</span> m
+            <div class="limit-next-box">
+                <div class="next-row">NEXT <span id="next-limit-val">--</span> <small>km/h</small></div>
+                <div class="next-row">あと <span id="next-limit-dist">--</span> <small>m</small></div>
             </div>
         </div>
 
@@ -43,22 +46,25 @@
                 <span id="speed">0</span>
                 <span class="speed-unit">km/h</span>
             </div>
-            <div class="meter-container"><div id="notch-bar"></div></div>
+            <div class="meter-box">
+                <div id="notch-bar"></div>
+            </div>
         </div>
 
         <div class="right-info">
-            <div style="color:var(--accel-color); font-weight:bold; font-size: 1.6rem;">NEXT: <span id="next-name">---</span></div>
-            <div style="color:var(--brake-color); font-weight:bold; font-size: 1.3rem;">9431M Expo Liner</div>
-            <div class="train-info-small">Osaka → Sakurajima</div>
-            <div id="distance">-- m</div>
+            <div class="station-next">NEXT: <span id="next-name">---</span></div>
+            <div class="train-name">9431M Expo Liner</div>
+            <div class="train-route">Osaka → Sakurajima</div>
+            <div id="distance" class="dist-val">-- m</div>
         </div>
     </div>
 
     <div class="control-container">
         <button class="notch-btn" onpointerdown="changeNotch(1)">▲ 加速</button>
-        <button id="eb-btn" class="eb-btn-small" onpointerdown="handleEB()">EB</button>
+        <button id="eb-btn" class="eb-btn" onpointerdown="handleEB()">EB</button>
         <button class="notch-btn" onpointerdown="changeNotch(-1)">▼ 減速</button>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
