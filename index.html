@@ -8,24 +8,18 @@
         :root {
             --bg-color: #050505; --panel-color: #1a1a1a; --text-color: #e0e0e0; --btn-text: #ffffff;
             --accel-color: #00ff66; --brake-color: #ffaa00; --eb-color: #ff0000;
-            --pause-bg: rgba(255, 255, 255, 0.4); --pause-text: #000000;
         }
-        body.light-mode {
-            --bg-color: #f0f0f0; --panel-color: #ffffff; --text-color: #222222; --btn-text: #222222;
-            --pause-bg: rgba(0, 0, 0, 0.5); --pause-text: #aaaaaa;
-        }
+        /* 連打による拡大を防止 */
+        * { touch-action: none; -webkit-text-size-adjust: none; user-select: none; }
+        
         body {
             margin: 0; padding: 0; background-color: var(--bg-color); color: var(--text-color);
             font-family: 'Segoe UI', sans-serif; overflow: hidden; height: 100dvh; width: 100vw;
-            display: flex; flex-direction: column; touch-action: manipulation; position: relative;
+            display: flex; flex-direction: column; position: relative;
         }
-        body.is-paused::after {
-            content: "PAUSE"; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--pause-bg); display: flex; align-items: center; justify-content: center;
-            font-size: 5rem; font-weight: 900; letter-spacing: 1rem; color: var(--pause-text); z-index: 1000; backdrop-filter: blur(2px);
-        }
-        .header-area { height: 55px; display: flex; justify-content: flex-end; align-items: center; padding: 0 20px; gap: 10px; flex-shrink: 0; z-index: 1100; }
-        .util-btn { background: var(--panel-color); color: var(--text-color); border: 2px solid #555; padding: 6px 12px; border-radius: 8px; font-size: 1rem; font-weight: 900; cursor: pointer; }
+        
+        .header-area { height: 55px; display: flex; justify-content: flex-end; align-items: center; padding: 0 20px; gap: 10px; flex-shrink: 0; }
+        .util-btn { background: var(--panel-color); color: var(--text-color); border: 2px solid #555; padding: 6px 12px; border-radius: 8px; font-size: 1rem; font-weight: 900; }
         .display-container { flex: 1; display: grid; grid-template-columns: 1fr 2fr 1fr; padding: 0 25px; align-items: center; min-height: 0; }
         .limit-speed { color: #ff4444; font-size: 4.2rem; font-weight: bold; line-height: 1; }
         .center-dash { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
@@ -42,10 +36,9 @@
         .eb-btn-small.eb-on { background: #ff0000; box-shadow: 0 0 25px #ff0000; border-color: #ffaaaa; transform: scale(1.05); }
     </style>
 </head>
-<body ontouchstart="">
+<body>
     <div class="header-area">
         <button class="util-btn" style="color:#ff4444; border-color:#800;" onpointerdown="resetGame()">最初から</button>
-        <button class="util-btn" onpointerdown="toggleTheme()">Theme</button>
         <button id="pause-btn" class="util-btn" onpointerdown="togglePause()">Pause</button>
     </div>
     <div class="display-container">
@@ -73,10 +66,10 @@
     </div>
 
     <script>
+        // ダブルタップズームの徹底無効化
         document.addEventListener('touchstart', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
         
-        // パラメータ再調整：EBを0.13(強化)、B8を0.065(強化)へ
-        const PARAMS = { accel_power: 0.04, brake_power: 0.065, eb_power: 0.13, friction: 0.003, refresh_ms: 50 };
+        const PARAMS = { accel_power: 0.04, brake_power: 0.08, eb_power: 0.15, friction: 0.003, refresh_ms: 50 };
         const STATIONS = [{ name: "大阪", dist: 0 }, { name: "西九条", dist: 3800 }, { name: "安治川口", dist: 5400 }, { name: "ユニバーサルシティ", dist: 6600 }, { name: "桜島", dist: 7800 }];
         
         let speed = 0, currentPos = 0, notch = -5, isPaused = false, nextStationIdx = 1, lastNotch = 0, hasStopped = false;
@@ -89,8 +82,7 @@
             }
         }
 
-        function toggleTheme() { document.body.classList.toggle('light-mode'); }
-        function togglePause() { isPaused = !isPaused; document.getElementById('pause-btn').innerText = isPaused ? 'Resume' : 'Pause'; document.body.classList.toggle('is-paused', isPaused); }
+        function togglePause() { isPaused = !isPaused; document.getElementById('pause-btn').innerText = isPaused ? 'Resume' : 'Pause'; }
         function changeNotch(val) { if (isPaused || notch === -9) return; notch += val; if (notch > 5) notch = 5; if (notch < -8) notch = -8; updateUI(); }
 
         function handleEB() {
@@ -119,27 +111,18 @@
             if (notch > 0) {
                 speed += notch * PARAMS.accel_power;
             } else if (notch < 0) {
-                // 低速域（10km/h以下）での食いつき係数を強化
-                let gripFactor = (speed < 10) ? (1.8 - (speed / 12)) : 1.0;
+                let gripFactor = (speed < 10) ? (1.5 - (speed / 20)) : 1.0;
                 let bPower = (notch === -9) ? PARAMS.eb_power : (PARAMS.brake_power / 8);
                 speed += notch * bPower * gripFactor;
             }
-            
             speed -= PARAMS.friction;
 
             if (speed < 0.1) {
-                // 停止時：5km/h以上から減速してきた場合のみ判定
-                if (speed > 0 && !hasStopped) { 
-                    checkStopJudgment(); 
-                    hasStopped = true; 
-                }
+                if (speed > 0 && !hasStopped) { checkStopJudgment(); hasStopped = true; }
                 speed = 0;
-            } else if (speed >= 5.0) { 
-                // 発車時：5km/hを超えたら判定表示を確実に消し、停止フラグを下ろす
-                if (hasStopped || document.getElementById('judgment').innerText !== "") {
-                    document.getElementById('judgment').innerText = "";
-                    hasStopped = false;
-                }
+            } else if (speed >= 0.5) { // 動き出したら即座に判定を消去
+                document.getElementById('judgment').innerText = "";
+                hasStopped = false;
             }
             
             currentPos += (speed / 3.6) * (PARAMS.refresh_ms / 1000);
@@ -157,8 +140,7 @@
             if (speed > currentLimit && notch !== -9) { lastNotch = notch; notch = -9; updateUI(); }
             if (notch === -9 && speed <= currentLimit - 20 && speed > 0) { notch = lastNotch; updateUI(); }
 
-            // 駅切り替え：15m通り過ぎたら強制リセット
-            if (distToNext < -15 && nextStationIdx < STATIONS.length - 1) {
+            if (distToNext < -10 && nextStationIdx < STATIONS.length - 1) {
                 nextStationIdx++;
                 document.getElementById('judgment').innerText = "";
                 hasStopped = false;
@@ -166,9 +148,7 @@
         }, PARAMS.refresh_ms);
 
         function checkStopJudgment() {
-            // 走行開始直後（例えば駅についてすぐ）の誤爆を防ぐ
             if (speed > 1.0) return; 
-
             let diff = Math.abs(STATIONS[nextStationIdx].dist - currentPos) * 100;
             let judgeEl = document.getElementById('judgment');
             if (diff < 10) { judgeEl.innerText = "EXCELLENT"; judgeEl.style.color = "#00ffff"; }
