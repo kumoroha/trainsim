@@ -17,31 +17,32 @@ const STATIONS = [
 let speed = 0, currentPos = 0, notch = -5, isPaused = false, nextStationIdx = 1, hasStopped = false, isStationProcess = false;
 let startTime = null;
 let elapsedTime = 0;
+let pauseStartTime = null; // 一時停止した時刻
+let totalPausedMs = 0;    // 合計の停止時間
 
-// ダイヤ表示ロジック（あと○分○秒 形式）
+// ダイヤ表示ロジック
 function updateClock() {
-    if (isPaused || isStationProcess) return;
+    if (isPaused || isStationProcess) return; // 停止中や到着処理中は更新しない
     if (startTime === null && speed > 0) startTime = Date.now();
     
     if (startTime !== null) {
-        elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+        // (現在時刻 - 開始時刻 - 合計停止時間) で純粋な走行時間を計算
+        elapsedTime = Math.floor((Date.now() - startTime - totalPausedMs) / 1000);
+        
         let targetSec = STATIONS[nextStationIdx].arrivalSec;
         let remain = targetSec - elapsedTime;
         
         const clockEl = document.getElementById('clock');
         
         if (remain > 100) {
-            // 100秒より多ければ「あと○分○秒」
             let mins = Math.floor(remain / 60);
             let secs = remain % 60;
             clockEl.innerText = `あと${mins}分${secs}秒`;
             clockEl.style.color = "var(--accel-color)";
         } else if (remain >= 0) {
-            // 100秒以下なら「あと○秒」
             clockEl.innerText = `あと${remain}秒`;
             clockEl.style.color = "#ffaa00";
         } else {
-            // 遅延時
             clockEl.innerText = `${Math.abs(remain)}秒 遅れ`;
             clockEl.style.color = "#ff0000";
         }
@@ -54,10 +55,22 @@ function resetGame() {
         location.reload();
     }
 }
+
 function toggleTheme() { document.body.classList.toggle('light-mode'); }
+
 function togglePause() { 
     isPaused = !isPaused; 
-    document.getElementById('pause-btn').innerText = isPaused ? 'Resume' : 'Pause';
+    const btn = document.getElementById('pause-btn');
+    
+    if (isPaused) {
+        btn.innerText = 'Resume';
+        pauseStartTime = Date.now(); // 停止開始時刻を記録
+    } else {
+        btn.innerText = 'Pause';
+        if (pauseStartTime) {
+            totalPausedMs += (Date.now() - pauseStartTime); // 停止していた時間を加算
+        }
+    }
     document.body.classList.toggle('is-paused', isPaused);
 }
 
