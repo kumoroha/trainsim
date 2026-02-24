@@ -13,6 +13,7 @@
             --accel-color: #00ff66;
             --brake-color: #ffaa00;
             --eb-color: #ff0000;
+            --pause-overlay: rgba(255, 255, 255, 0.2); /* ダークモード時は白っぽく */
         }
 
         body.light-mode {
@@ -20,6 +21,7 @@
             --panel-color: #ffffff;
             --text-color: #222222;
             --btn-text: #222222;
+            --pause-overlay: rgba(0, 0, 0, 0.2); /* ライトモード時は暗く */
         }
 
         body {
@@ -33,12 +35,24 @@
             display: flex;
             flex-direction: column;
             touch-action: manipulation;
-            transition: opacity 0.3s;
+            position: relative;
         }
 
-        /* Pause状態の視覚効果 */
-        body.is-paused {
-            opacity: 0.6;
+        /* Pause状態の視覚効果：擬似要素で画面全体を覆う */
+        body.is-paused::after {
+            content: "PAUSE";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--pause-overlay);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: 900;
+            letter-spacing: 0.5rem;
+            color: var(--text-color);
+            z-index: 1000;
+            pointer-events: none; /* 下のボタン操作を邪魔しない（Pause解除ボタンのため） */
         }
 
         .utils {
@@ -49,7 +63,7 @@
             gap: 15px;
             padding: 0 20px;
             flex-shrink: 0;
-            z-index: 100;
+            z-index: 1100; /* Pauseオーバーレイより上に */
         }
         .util-btn {
             background: var(--panel-color);
@@ -59,6 +73,7 @@
             border-radius: 8px;
             font-size: 1.1rem;
             font-weight: 900;
+            cursor: pointer;
         }
 
         .display-container {
@@ -113,7 +128,6 @@
             font-size: 2.8rem;
             font-weight: bold;
             height: 100%;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.5);
         }
 
         .eb-btn-small {
@@ -130,10 +144,8 @@
             box-shadow: 0 5px 0 #550000;
             flex-shrink: 0;
             margin-bottom: 20px;
-            transition: all 0.1s;
         }
         
-        /* EB作動中：明るく光るだけ */
         .eb-btn-small.eb-on {
             background: #ff0000;
             box-shadow: 0 0 25px #ff0000;
@@ -182,7 +194,6 @@
             if (e.touches.length > 1) e.preventDefault();
         }, { passive: false });
 
-        // eb_powerを0.35から0.18に緩和し、より自然な非常ブレーキに調整
         const PARAMS = { accel_power: 0.04, brake_power: 0.07, eb_power: 0.18, friction: 0.003, refresh_ms: 50 };
         const STATIONS = [
             { name: "大阪", dist: 0 }, { name: "西九条", dist: 3800 },
@@ -197,9 +208,7 @@
         
         function togglePause() {
             isPaused = !isPaused;
-            const btn = document.getElementById('pause-btn');
-            btn.innerText = isPaused ? 'Resume' : 'Pause';
-            // Pause時に画面全体を暗くして分かりやすくする
+            document.getElementById('pause-btn').innerText = isPaused ? 'Resume' : 'Pause';
             document.body.classList.toggle('is-paused', isPaused);
         }
 
@@ -225,8 +234,7 @@
         function updateUI() {
             const bar = document.getElementById('notch-bar'), 
                   txt = document.getElementById('notch-text'),
-                  ebBtn = document.getElementById('eb-btn'),
-                  speedDisp = document.getElementById('speed-display');
+                  ebBtn = document.getElementById('eb-btn');
 
             if (notch === -9) {
                 bar.style.width = "100%";
@@ -234,10 +242,8 @@
                 txt.innerText = "EB";
                 txt.style.color = "var(--eb-color)";
                 ebBtn.classList.add('eb-on');
-                speedDisp.style.color = "var(--eb-color)";
             } else {
                 ebBtn.classList.remove('eb-on');
-                speedDisp.style.color = "";
                 if (notch > 0) {
                     bar.style.width = (notch / 5) * 100 + "%";
                     bar.style.backgroundColor = "var(--accel-color)";
