@@ -26,13 +26,12 @@ body.is-paused::after {
 .header-area { height: 60px; display: flex; justify-content: flex-end; align-items: center; padding: 0 15px; gap: 8px; flex-shrink: 0; z-index: 2100; }
 .util-btn { background: var(--panel-color); color: var(--text-color); border: 2.5px solid #666; padding: 8px 14px; border-radius: 10px; font-size: 0.9rem; font-weight: bold; }
 
-/* 全体的にサイズアップ */
 .display-container { flex: 1; display: grid; grid-template-columns: 1.3fr 2fr 1.3fr; padding: 0 20px; align-items: center; gap: 15px; }
 
-/* 制限エリアの視認性向上 */
 .limit-area { display: flex; flex-direction: column; gap: 8px; }
 .limit-main { display: flex; flex-direction: column; }
 .limit-speed { color: #ff3333; font-size: 4.5rem; font-weight: bold; line-height: 1; text-shadow: 0 0 10px rgba(255,0,0,0.3); }
+
 .limit-next { 
     background: rgba(255,68,68,0.15); 
     border-left: 5px solid #ff4444; 
@@ -41,11 +40,25 @@ body.is-paused::after {
     color: #ffaaaa; 
     font-weight: bold; 
     border-radius: 0 8px 8px 0;
-    line-height: 1.4;
+    line-height: 1.2;
 }
+
 #next-limit-val { font-size: 1.4rem; color: #ff3333; }
 
-/* 中央計器の拡大 */
+/* 予告距離を大きく表示 */
+#next-limit-dist { 
+    font-size: 2.8rem !important; 
+    color: #ff4444;
+    line-height: 1;
+    margin-top: 5px;
+    display: block;
+}
+#next-limit-dist::after {
+    content: "m";
+    font-size: 1.2rem;
+    margin-left: 4px;
+}
+
 .center-dash { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
 #notch-text { font-size: 3.5rem; font-weight: bold; line-height: 1; }
 .main-speed { font-size: 10rem; font-weight: 800; line-height: 0.75; letter-spacing: -2px; }
@@ -53,7 +66,6 @@ body.is-paused::after {
 .meter-container { width: 100%; height: 30px; background: #333; border-radius: 8px; border: 2.5px solid #555; overflow: hidden; }
 #notch-bar { height: 100%; width: 0%; transition: width 0.1s; }
 
-/* 右側情報の拡大 */
 .right-info { text-align: right; display: flex; flex-direction: column; gap: 8px; }
 .train-info-small { font-size: 1rem; font-weight: bold; opacity: 0.8; }
 #distance { font-size: 3.2rem; font-weight: bold; margin-top: 5px; }
