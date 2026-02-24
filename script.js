@@ -17,21 +17,17 @@ const STATIONS = [
 let speed = 0, currentPos = 0, notch = -5, isPaused = false, nextStationIdx = 1, hasStopped = false, isStationProcess = false;
 let startTime = null;
 let elapsedTime = 0;
-let pauseStartTime = null; // 一時停止した時刻
-let totalPausedMs = 0;    // 合計の停止時間
+let pauseStartTime = null;
+let totalPausedMs = 0;
 
-// ダイヤ表示ロジック
 function updateClock() {
-    if (isPaused || isStationProcess) return; // 停止中や到着処理中は更新しない
+    if (isPaused || isStationProcess) return;
     if (startTime === null && speed > 0) startTime = Date.now();
     
     if (startTime !== null) {
-        // (現在時刻 - 開始時刻 - 合計停止時間) で純粋な走行時間を計算
         elapsedTime = Math.floor((Date.now() - startTime - totalPausedMs) / 1000);
-        
         let targetSec = STATIONS[nextStationIdx].arrivalSec;
         let remain = targetSec - elapsedTime;
-        
         const clockEl = document.getElementById('clock');
         
         if (remain > 100) {
@@ -61,15 +57,12 @@ function toggleTheme() { document.body.classList.toggle('light-mode'); }
 function togglePause() { 
     isPaused = !isPaused; 
     const btn = document.getElementById('pause-btn');
-    
     if (isPaused) {
         btn.innerText = 'Resume';
-        pauseStartTime = Date.now(); // 停止開始時刻を記録
+        pauseStartTime = Date.now();
     } else {
         btn.innerText = 'Pause';
-        if (pauseStartTime) {
-            totalPausedMs += (Date.now() - pauseStartTime); // 停止していた時間を加算
-        }
+        if (pauseStartTime) totalPausedMs += (Date.now() - pauseStartTime);
     }
     document.body.classList.toggle('is-paused', isPaused);
 }
@@ -100,20 +93,45 @@ function handleEB() {
 
 function updateUI() {
     const bar = document.getElementById('notch-bar'), txt = document.getElementById('notch-text'), ebBtn = document.getElementById('eb-btn');
-    if (notch === -9) {
-        bar.style.width = "100%"; bar.style.backgroundColor = "var(--eb-color)"; 
-        txt.innerText = "EB"; txt.style.color = "var(--eb-color)"; ebBtn.classList.add('eb-on');
-    } else {
+    
+    // ゲージの計算ロジック: 中心(50%)から左右に伸ばす
+    // 加速: 50%から右へ最大50% (P5)
+    // ブレーキ: 50%から左へ最大50% (EBを-10、B1-8を-1.25~-8.75として計算)
+    
+    if (notch > 0) {
+        // P1-P5 (緑)
+        let w = (notch / 5) * 50;
+        bar.style.left = "50%";
+        bar.style.width = w + "%";
+        bar.style.backgroundColor = "var(--accel-color)";
+        txt.innerText = "P" + notch;
+        txt.style.color = "var(--accel-color)";
         ebBtn.classList.remove('eb-on');
-        if (notch > 0) { 
-            bar.style.width = (notch/5)*100+"%"; bar.style.backgroundColor = "var(--accel-color)"; 
-            txt.innerText = "P"+notch; txt.style.color = "var(--accel-color)"; 
-        } else if (notch < 0) { 
-            bar.style.width = (Math.abs(notch)/8)*100+"%"; bar.style.backgroundColor = "var(--brake-color)"; 
-            txt.innerText = "B"+Math.abs(notch); txt.style.color = "var(--brake-color)"; 
-        } else { 
-            bar.style.width = "0%"; txt.innerText = "N"; txt.style.color = "var(--text-color)"; 
+    } else if (notch < 0) {
+        // B1-EB (橙/赤)
+        let absN = Math.abs(notch);
+        let w = (absN / 9) * 50; // EB(-9)で50%幅
+        bar.style.left = (50 - w) + "%";
+        bar.style.width = w + "%";
+        
+        if (notch === -9) {
+            bar.style.backgroundColor = "var(--eb-color)";
+            txt.innerText = "EB";
+            txt.style.color = "var(--eb-color)";
+            ebBtn.classList.add('eb-on');
+        } else {
+            bar.style.backgroundColor = "var(--brake-color)";
+            txt.innerText = "B" + absN;
+            txt.style.color = "var(--brake-color)";
+            ebBtn.classList.remove('eb-on');
         }
+    } else {
+        // Neutral
+        bar.style.width = "0%";
+        bar.style.left = "50%";
+        txt.innerText = "N";
+        txt.style.color = "var(--text-color)";
+        ebBtn.classList.remove('eb-on');
     }
 }
 
@@ -132,9 +150,7 @@ setInterval(() => {
         if (speed > 0 && !hasStopped) { 
             hasStopped = true;
             let dToGoal = Math.abs(STATIONS[nextStationIdx].dist - currentPos);
-            if (dToGoal <= 50) {
-                processArrival();
-            }
+            if (dToGoal <= 50) processArrival();
         }
         speed = 0;
     } else if (speed >= 0.5) {
@@ -145,9 +161,7 @@ setInterval(() => {
     let nextS = STATIONS[nextStationIdx], dNext = nextS.dist - currentPos;
     
     let cLimit = 95;
-    let nLimit = "--";
-    let nLimDist = "--";
-
+    let nLimit = "--", nLimDist = "--";
     if (dNext < 300) { cLimit = 25; nLimit = "終了"; nLimDist = "停車"; }
     else if (dNext < 800) { cLimit = 45; nLimit = "25"; nLimDist = Math.floor(dNext - 300); }
     else { cLimit = 95; nLimit = "45"; nLimDist = Math.floor(dNext - 800); }
@@ -171,7 +185,6 @@ function processArrival() {
     let targetSec = STATIONS[nextStationIdx].arrivalSec;
     let timeDiff = elapsedTime - targetSec;
     let timeResult = (timeDiff === 0) ? "定時" : (timeDiff > 0 ? `${timeDiff}秒 延着` : `${Math.abs(timeDiff)}秒 早着`);
-
     let resultText = (stopDistDiff < 15) ? "EXCELLENT" : (stopDistDiff < 40 ? "GREAT" : (stopDistDiff < 150 ? "GOOD" : "BAD"));
 
     setTimeout(() => {
