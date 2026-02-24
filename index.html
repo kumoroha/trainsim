@@ -35,7 +35,6 @@
             touch-action: manipulation;
         }
 
-        /* 1. ユーティリティ（ボタンサイズ維持、文字のみ拡大） */
         .utils {
             height: 50px; 
             display: flex;
@@ -51,12 +50,10 @@
             border: 2px solid #555;
             padding: 8px 16px;
             border-radius: 8px;
-            font-size: 1.1rem; /* 文字を少し大きく */
-            font-weight: 900;  /* 太字で強調 */
-            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 900;
         }
 
-        /* 2. 計器表示（理想の巨大サイズと空白） */
         .display-container {
             flex: 1; 
             display: grid;
@@ -89,7 +86,6 @@
         }
         #notch-bar { height: 100%; width: 0%; transition: width 0.1s; }
 
-        /* 3. 操作パネル（中央にEBボタンを配置） */
         .control-container {
             height: 220px; 
             display: flex;
@@ -113,26 +109,28 @@
             box-shadow: 0 6px 12px rgba(0,0,0,0.5);
         }
 
-        /* JR西日本風 EBボタン（小型・中央） */
         .eb-btn-small {
-            width: 80px;
-            height: 80px;
-            background: #cc0000;
-            border: 6px solid #ffcc00; /* 黄色い枠 */
+            width: 85px; height: 85px;
+            background: #aa0000;
+            border: 4px solid #440000;
             border-radius: 50%;
             color: white;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             font-weight: 900;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 0 #800000;
+            box-shadow: 0 5px 0 #550000;
             flex-shrink: 0;
-            margin-bottom: 20px; /* 少し浮かせる */
+            margin-bottom: 20px;
         }
-        .eb-btn-small:active {
-            transform: translateY(4px);
-            box-shadow: none;
+        
+        /* 点滅なし、明るく固定して「押されている感」を出す */
+        .eb-btn-small.eb-on {
+            background: #ff0000;
+            box-shadow: 0 0 15px #ff0000;
+            border-color: #ffcccc;
+            transform: translateY(2px);
         }
 
     </style>
@@ -152,7 +150,7 @@
 
         <div class="center-dash">
             <div id="notch-text">N</div>
-            <div class="main-speed"><span id="speed">0</span><span class="speed-unit"> km/h</span></div>
+            <div id="speed-display" class="main-speed"><span id="speed">0</span><span class="speed-unit"> km/h</span></div>
             <div class="meter-container">
                 <div id="notch-bar"></div>
             </div>
@@ -167,7 +165,7 @@
 
     <div class="control-container">
         <button class="notch-btn" onpointerdown="changeNotch(1)">▲ 加速</button>
-        <button class="eb-btn-small" onpointerdown="setEB()">EB</button>
+        <button id="eb-btn" class="eb-btn-small" onpointerdown="handleEB()">EB</button>
         <button class="notch-btn" onpointerdown="changeNotch(-1)">▼ 減速</button>
     </div>
 
@@ -178,14 +176,13 @@
 
         const PARAMS = { accel_power: 0.04, brake_power: 0.07, eb_power: 0.35, friction: 0.003, refresh_ms: 50 };
         const STATIONS = [
-            { name: "大阪", dist: 0 },
-            { name: "西九条", dist: 3800 },
-            { name: "安治川口", dist: 5400 },
-            { name: "ユニバーサルシティ", dist: 6600 },
+            { name: "大阪", dist: 0 }, { name: "西九条", dist: 3800 },
+            { name: "安治川口", dist: 5400 }, { name: "ユニバーサルシティ", dist: 6600 },
             { name: "桜島", dist: 7800 }
         ];
 
         let speed = 0, currentPos = 0, notch = -5, isPaused = false, nextStationIdx = 1;
+        let lastNotch = 0; // 直前のノッチを記憶
 
         function toggleTheme() { document.body.classList.toggle('light-mode'); }
         function togglePause() {
@@ -194,62 +191,86 @@
         }
 
         function changeNotch(val) {
-            if (isPaused) return;
+            if (isPaused || notch === -9) return;
             notch += val;
             if (notch > 5) notch = 5;
-            if (notch < -9) notch = -9;
+            if (notch < -8) notch = -8;
             updateUI();
         }
 
-        function setEB() {
+        function handleEB() {
             if (isPaused) return;
-            notch = -9;
+            if (notch === -9) {
+                notch = lastNotch; // 記憶していたノッチに戻す
+            } else {
+                lastNotch = notch; // 現在のノッチを保存
+                notch = -9;
+            }
             updateUI();
         }
 
         function updateUI() {
-            const bar = document.getElementById('notch-bar'), txt = document.getElementById('notch-text');
-            if (notch > 0) {
-                bar.style.width = (notch / 5) * 100 + "%";
-                bar.style.backgroundColor = "var(--accel-color)";
-                txt.innerText = "P" + notch;
-                txt.style.color = "var(--accel-color)";
-            } else if (notch < 0) {
-                let isEB = (notch === -9);
-                bar.style.width = (Math.abs(notch) / 9) * 100 + "%";
-                bar.style.backgroundColor = isEB ? "var(--eb-color)" : "var(--brake-color)";
-                txt.innerText = isEB ? "EB" : "B" + Math.abs(notch);
-                txt.style.color = isEB ? "var(--eb-color)" : "var(--brake-color)";
+            const bar = document.getElementById('notch-bar'), 
+                  txt = document.getElementById('notch-text'),
+                  ebBtn = document.getElementById('eb-btn'),
+                  speedDisp = document.getElementById('speed-display');
+
+            if (notch === -9) {
+                bar.style.width = "100%";
+                bar.style.backgroundColor = "var(--eb-color)";
+                txt.innerText = "EB";
+                txt.style.color = "var(--eb-color)";
+                ebBtn.classList.add('eb-on');
+                ebBtn.innerText = "EB ON";
+                speedDisp.style.color = "var(--eb-color)";
             } else {
-                bar.style.width = "0%";
-                txt.innerText = "N";
-                txt.style.color = "var(--text-color)";
+                ebBtn.classList.remove('eb-on');
+                ebBtn.innerText = "EB";
+                speedDisp.style.color = "";
+                if (notch > 0) {
+                    bar.style.width = (notch / 5) * 100 + "%";
+                    bar.style.backgroundColor = "var(--accel-color)";
+                    txt.innerText = "P" + notch;
+                    txt.style.color = "var(--accel-color)";
+                } else if (notch < 0) {
+                    bar.style.width = (Math.abs(notch) / 8) * 100 + "%";
+                    bar.style.backgroundColor = "var(--brake-color)";
+                    txt.innerText = "B" + Math.abs(notch);
+                    txt.style.color = "var(--brake-color)";
+                } else {
+                    bar.style.width = "0%";
+                    txt.innerText = "N";
+                    txt.style.color = "var(--text-color)";
+                }
             }
         }
 
         setInterval(() => {
             if (isPaused) return;
+            
             if (notch > 0) speed += notch * PARAMS.accel_power;
             else if (notch < 0) speed += notch * ((notch === -9) ? PARAMS.eb_power : PARAMS.brake_power);
             speed -= PARAMS.friction;
             if (speed < 0) speed = 0;
-            currentPos += (speed / 3.6) * (PARAMS.refresh_ms / 1000);
             
+            currentPos += (speed / 3.6) * (PARAMS.refresh_ms / 1000);
             let nextStation = STATIONS[nextStationIdx], distToNext = nextStation.dist - currentPos;
-            if (distToNext < 0) {
-                if (nextStationIdx < STATIONS.length - 1) {
-                    nextStationIdx++;
-                    nextStation = STATIONS[nextStationIdx];
-                    distToNext = nextStation.dist - currentPos;
-                } else { distToNext = 0; speed = 0; }
+            
+            let limit = (distToNext < 300) ? 25 : (distToNext < 800) ? 45 : 95;
+
+            // スピード超過時の自動EB
+            if (speed > limit && notch !== -9) {
+                lastNotch = notch; // 超過した瞬間のノッチを保存
+                notch = -9;
+                updateUI();
             }
+
             document.getElementById('speed').innerText = Math.floor(speed);
             document.getElementById('distance').innerText = Math.floor(distToNext) + " m";
+            document.getElementById('limit').innerText = limit;
             document.getElementById('section-name').innerText = STATIONS[nextStationIdx-1].name + " → " + nextStation.name;
-            
-            if (distToNext < 300) document.getElementById('limit').innerText = "25";
-            else if (distToNext < 800) document.getElementById('limit').innerText = "45";
-            else document.getElementById('limit').innerText = "95";
+
+            if (distToNext < 0 && nextStationIdx < STATIONS.length - 1) nextStationIdx++;
         }, PARAMS.refresh_ms);
         updateUI();
     </script>
