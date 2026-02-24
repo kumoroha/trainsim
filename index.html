@@ -13,7 +13,8 @@
             --accel-color: #00ff66;
             --brake-color: #ffaa00;
             --eb-color: #ff0000;
-            --pause-overlay: rgba(255, 255, 255, 0.2); /* ダークモード時は白っぽく */
+            --pause-bg: rgba(255, 255, 255, 0.4); /* より白く */
+            --pause-text: #000000;
         }
 
         body.light-mode {
@@ -21,7 +22,8 @@
             --panel-color: #ffffff;
             --text-color: #222222;
             --btn-text: #222222;
-            --pause-overlay: rgba(0, 0, 0, 0.2); /* ライトモード時は暗く */
+            --pause-bg: rgba(0, 0, 0, 0.5); /* より暗く */
+            --pause-text: #aaaaaa; /* 灰色文字 */
         }
 
         body {
@@ -38,32 +40,45 @@
             position: relative;
         }
 
-        /* Pause状態の視覚効果：擬似要素で画面全体を覆う */
+        /* 視認性を高めたPAUSEオーバーレイ */
         body.is-paused::after {
             content: "PAUSE";
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--pause-overlay);
+            background: var(--pause-bg);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 3rem;
+            font-size: 5rem;
             font-weight: 900;
-            letter-spacing: 0.5rem;
-            color: var(--text-color);
+            letter-spacing: 1rem;
+            color: var(--pause-text);
             z-index: 1000;
-            pointer-events: none; /* 下のボタン操作を邪魔しない（Pause解除ボタンのため） */
+            pointer-events: none;
+            backdrop-filter: blur(2px);
+        }
+
+        /* ヘッダーエリア：上部ボタンと次駅表示 */
+        .header-area {
+            height: 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 25px;
+            flex-shrink: 0;
+            z-index: 1100;
+        }
+
+        .next-station-display {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--accel-color);
+            letter-spacing: 0.1rem;
         }
 
         .utils {
-            height: 50px; 
             display: flex;
-            justify-content: flex-end;
-            align-items: center;
             gap: 15px;
-            padding: 0 20px;
-            flex-shrink: 0;
-            z-index: 1100; /* Pauseオーバーレイより上に */
         }
         .util-btn {
             background: var(--panel-color);
@@ -157,9 +172,12 @@
 </head>
 <body ontouchstart="">
 
-    <div class="utils">
-        <button class="util-btn" onpointerdown="toggleTheme()">Theme</button>
-        <button id="pause-btn" class="util-btn" onpointerdown="togglePause()">Pause</button>
+    <div class="header-area">
+        <div class="next-station-display">NEXT: <span id="next-name">---</span></div>
+        <div class="utils">
+            <button class="util-btn" onpointerdown="toggleTheme()">Theme</button>
+            <button id="pause-btn" class="util-btn" onpointerdown="togglePause()">Pause</button>
+        </div>
     </div>
 
     <div class="display-container">
@@ -178,7 +196,7 @@
 
         <div class="info-box" style="text-align:right;">
             <div style="color:var(--brake-color); font-weight:bold; font-size: 1.4rem;">9431M Expo Liner</div>
-            <div id="section-name" style="color:#aaa; font-size: 1.1rem;">Osaka → Nishi-Kujo</div>
+            <div id="section-name" style="color:#aaa; font-size: 1.1rem;">--- → ---</div>
             <div id="distance" style="font-size: 2.5rem; margin-top:8px; font-weight: bold;">-- m</div>
         </div>
     </div>
@@ -283,6 +301,7 @@
             document.getElementById('speed').innerText = Math.floor(speed);
             document.getElementById('distance').innerText = Math.floor(distToNext) + " m";
             document.getElementById('limit').innerText = limit;
+            document.getElementById('next-name').innerText = nextStation.name;
             document.getElementById('section-name').innerText = STATIONS[nextStationIdx-1].name + " → " + nextStation.name;
 
             if (distToNext < 0 && nextStationIdx < STATIONS.length - 1) nextStationIdx++;
