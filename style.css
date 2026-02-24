@@ -1,0 +1,49 @@
+:root {
+    --bg-color: #050505; --panel-color: #1a1a1a; --text-color: #e0e0e0; --btn-text: #ffffff;
+    --accel-color: #00ff66; --brake-color: #ffaa00; --eb-color: #ff0000;
+    --pause-bg: rgba(255, 255, 255, 0.2); --pause-text: #ffffff;
+}
+body.light-mode {
+    --bg-color: #b0b0b0; --panel-color: #e0e0e0; --text-color: #1a1a1a; --btn-text: #1a1a1a;
+    --pause-bg: rgba(0, 0, 0, 0.6); --pause-text: #ffffff;
+}
+
+html, body { overflow: hidden; width: 100%; height: 100%; position: fixed; }
+* { touch-action: none !important; -webkit-text-size-adjust: none; user-select: none; outline: none; }
+
+body {
+    margin: 0; padding: 0; background-color: var(--bg-color); color: var(--text-color);
+    font-family: 'Segoe UI', sans-serif; height: 100dvh; width: 100vw;
+    display: flex; flex-direction: column; position: relative;
+}
+
+body.is-paused::after {
+    content: "PAUSE"; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--pause-bg); display: flex; align-items: center; justify-content: center;
+    font-size: 5rem; font-weight: 900; letter-spacing: 1rem; color: var(--pause-text); z-index: 2000; backdrop-filter: blur(5px);
+}
+
+.header-area { height: 60px; display: flex; justify-content: flex-end; align-items: center; padding: 0 15px; gap: 8px; flex-shrink: 0; z-index: 2100; }
+.util-btn { background: var(--panel-color); color: var(--text-color); border: 2.5px solid #666; padding: 8px 14px; border-radius: 10px; font-size: 0.9rem; font-weight: bold; }
+
+.display-container { flex: 1; display: grid; grid-template-columns: 1.2fr 2fr 1fr; padding: 0 15px; align-items: center; gap: 5px; }
+
+.limit-area { display: flex; flex-direction: column; gap: 5px; }
+.limit-main { display: flex; flex-direction: column; }
+.limit-speed { color: #ff3333; font-size: 3.8rem; font-weight: bold; line-height: 1; }
+.limit-next { background: rgba(255,68,68,0.1); border-left: 3px solid #ff4444; padding: 4px 8px; font-size: 0.9rem; color: #ff8888; font-weight: bold; }
+
+.center-dash { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
+#notch-text { font-size: 3rem; font-weight: bold; line-height: 1; }
+.main-speed { font-size: 8rem; font-weight: 800; line-height: 0.75; }
+.speed-unit { font-size: 1.8rem; color: #555; }
+.meter-container { width: 100%; height: 24px; background: #333; border-radius: 6px; border: 2px solid #555; overflow: hidden; }
+#notch-bar { height: 100%; width: 0%; transition: width 0.1s; }
+
+.right-info { text-align: right; display: flex; flex-direction: column; gap: 4px; }
+.train-info-small { font-size: 0.9rem; font-weight: bold; opacity: 0.8; }
+
+.control-container { height: 240px; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 10px 15px 30px 15px; box-sizing: border-box; flex-shrink: 0; }
+.notch-btn { flex: 1; background: var(--panel-color); color: var(--btn-text); border: 3px solid #666; border-radius: 20px; font-size: 2rem; font-weight: bold; height: 100%; }
+.eb-btn-small { width: 110px; height: 110px; background: #aa0000; border: 5px solid #440000; border-radius: 50%; color: white; font-size: 1.6rem; font-weight: 900; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 0 #550000; flex-shrink: 0; margin-bottom: 20px; z-index: 10; }
+.eb-btn-small.eb-on { background: #ff0000; box-shadow: 0 0 30px #ff0000; border-color: #ffaaaa; transform: scale(1.05); }
