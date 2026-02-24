@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Expo Liner Simulator Pro 2.47</title>
+    <title>Expo Liner Simulator Pro 2.48</title>
     <style>
         :root {
             --bg-color: #050505; --panel-color: #1a1a1a; --text-color: #e0e0e0; --btn-text: #ffffff;
@@ -172,7 +172,11 @@
             if (speed < 0.1) {
                 if (speed > 0 && !hasStopped) { 
                     hasStopped = true;
-                    processArrival();
+                    // 【修正点】到着予定の前後50m以内であればプロセス開始
+                    let dToGoal = Math.abs(STATIONS[nextStationIdx].dist - currentPos);
+                    if (dToGoal <= 50) {
+                        processArrival();
+                    }
                 }
                 speed = 0;
             } else if (speed >= 0.5) {
@@ -221,6 +225,7 @@
                     notch = -5;
                     updateUI();
                     isStationProcess = false;
+                    hasStopped = false; // フラグのリセット
                 } else {
                     alert("終点 桜島に到着しました。お疲れ様でした！");
                 }
