@@ -75,7 +75,8 @@
     <script>
         document.addEventListener('touchstart', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
         
-        const PARAMS = { accel_power: 0.04, brake_power: 0.045, eb_power: 0.065, friction: 0.003, refresh_ms: 50 };
+        // パラメータ微調整：EBを0.065から0.085へ強化。B8は0.045を維持。
+        const PARAMS = { accel_power: 0.04, brake_power: 0.045, eb_power: 0.085, friction: 0.003, refresh_ms: 50 };
         const STATIONS = [{ name: "大阪", dist: 0 }, { name: "西九条", dist: 3800 }, { name: "安治川口", dist: 5400 }, { name: "ユニバーサルシティ", dist: 6600 }, { name: "桜島", dist: 7800 }];
         
         let speed = 0, currentPos = 0, notch = -5, isPaused = false, nextStationIdx = 1, lastNotch = 0, hasStopped = false;
@@ -114,15 +115,23 @@
 
         setInterval(() => {
             if (isPaused) return;
-            if (notch > 0) speed += notch * PARAMS.accel_power; 
-            else if (notch < 0) speed += notch * ((notch === -9) ? PARAMS.eb_power : (PARAMS.brake_power/8));
+
+            // 加減速ロジックの改善
+            if (notch > 0) {
+                speed += notch * PARAMS.accel_power;
+            } else if (notch < 0) {
+                // 低速域（5km/h以下）でのブレーキの食いつきをシミュレート
+                let gripFactor = (speed < 5) ? (1.5 - (speed / 10)) : 1.0;
+                let bPower = (notch === -9) ? PARAMS.eb_power : (PARAMS.brake_power / 8);
+                speed += notch * bPower * gripFactor;
+            }
+            
             speed -= PARAMS.friction;
 
-            // 停車・発車判定の強化
             if (speed < 0.1) {
                 if (speed > 0 && !hasStopped) { checkStopJudgment(); hasStopped = true; }
                 speed = 0;
-            } else if (speed >= 1.0) { // 1km/h以上で完全に判定をリセット
+            } else if (speed >= 1.0) {
                 if (hasStopped || document.getElementById('judgment').innerText !== "") {
                     document.getElementById('judgment').innerText = "";
                     hasStopped = false;
@@ -144,7 +153,6 @@
             if (speed > currentLimit && notch !== -9) { lastNotch = notch; notch = -9; updateUI(); }
             if (notch === -9 && speed <= currentLimit - 20 && speed > 0) { notch = lastNotch; updateUI(); }
 
-            // 駅切り替え (15m以上離れたらリセット)
             if (distToNext < -15 && nextStationIdx < STATIONS.length - 1) {
                 nextStationIdx++;
                 document.getElementById('judgment').innerText = "";
