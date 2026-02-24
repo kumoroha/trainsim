@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Train Simulator 2.70</title>
+    <title>Train Simulator 2.71</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,38 +13,42 @@
             <div id="lamp-y" class="lamp"></div>
             <div id="lamp-g" class="lamp"></div>
         </div>
-        <div id="signal-name" class="signal-label">第2閉塞</div>
+        <div id="signal-name" class="signal-label">第3閉塞 (進行)</div>
     </div>
 
     <div class="header-area">
-        <div style="margin-right: auto; display: flex; align-items: baseline; gap: 10px;">
-            <span style="font-size: 0.8rem; font-weight: bold; opacity: 0.7;">NEXT ARRIVAL</span>
-            <div id="clock" style="font-family: monospace; font-size: 2.2rem; font-weight: bold; color: var(--accel-color);">WAIT...</div>
+        <div style="margin-right: auto; display: flex; align-items: baseline; gap: 15px;">
+            <span style="font-size: 1rem; font-weight: bold; opacity: 0.7;">NEXT ARRIVAL</span>
+            <div id="clock" style="font-family: monospace; font-size: 2.6rem; font-weight: bold; color: var(--accel-color);">WAIT...</div>
         </div>
         <button class="util-btn reset-btn" onpointerdown="resetGame()">最初から</button>
-        <button class="util-btn" onpointerdown="toggleTheme()">Theme</button>
         <button id="pause-btn" class="util-btn" onpointerdown="togglePause()">Pause</button>
     </div>
 
     <div class="display-container">
         <div class="limit-area">
-            <div class="limit-main">
-                <span style="font-size:0.9rem; font-weight: bold; opacity: 0.7;">現在の制限</span>
-                <span id="limit" class="limit-speed">--</span>
+            <div>
+                <div style="font-size:1.1rem; font-weight:bold; opacity:0.7;">現在の制限</div>
+                <div id="limit" class="limit-speed">--</div>
             </div>
-            <div id="next-limit-box" class="limit-next">
+            <div class="limit-next">
                 NEXT <span id="next-limit-val">--</span> km/h<br>
                 あと <span id="next-limit-dist">--</span> m
             </div>
         </div>
+
         <div class="center-dash">
             <div id="notch-text">N</div>
-            <div class="main-speed"><span id="speed">0</span><span class="speed-unit">km/h</span></div>
+            <div class="main-speed">
+                <span id="speed">0</span>
+                <span class="speed-unit">km/h</span>
+            </div>
             <div class="meter-container"><div id="notch-bar"></div></div>
         </div>
+
         <div class="right-info">
-            <div style="color:var(--accel-color); font-weight:bold; font-size: 1.3rem;">NEXT: <span id="next-name">---</span></div>
-            <div style="color:var(--brake-color); font-weight:bold; font-size: 1.1rem;">9431M Expo Liner</div>
+            <div style="color:var(--accel-color); font-weight:bold; font-size: 1.6rem;">NEXT: <span id="next-name">---</span></div>
+            <div style="color:var(--brake-color); font-weight:bold; font-size: 1.3rem;">9431M Expo Liner</div>
             <div class="train-info-small">Osaka → Sakurajima</div>
             <div id="distance">-- m</div>
         </div>
