@@ -3,11 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Train Simulator Pro 2.48</title>
+    <title>Train Simulator Pro 2.51</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body ontouchstart="">
     <div class="header-area">
+        <div style="margin-right: auto; display: flex; align-items: baseline; gap: 10px; padding-left: 10px;">
+            <span style="font-size: 0.8rem; font-weight: bold; opacity: 0.7;">TIME</span>
+            <div id="clock" style="font-family: monospace; font-size: 2rem; font-weight: bold; color: var(--accel-color);">00:00</div>
+        </div>
         <button class="util-btn" style="color:#ff2222; border-color:#a22;" onpointerdown="resetGame()">最初から</button>
         <button class="util-btn" onpointerdown="toggleTheme()">Theme</button>
         <button id="pause-btn" class="util-btn" onpointerdown="togglePause()">Pause</button>
@@ -32,7 +36,7 @@
             <div style="color:var(--accel-color); font-weight:bold; font-size: 1.3rem;">NEXT: <span id="next-name">---</span></div>
             <div style="color:var(--brake-color); font-weight:bold; font-size: 1.1rem;">9431M Expo Liner</div>
             <div class="train-info-small">Osaka → Sakurajima</div>
-            <div id="distance" style="font-size: 2.5rem; font-weight: bold;">-- m</div>
+            <div id="distance" style="font-size: 3.2rem; font-weight: bold;">-- m</div>
         </div>
     </div>
     <div class="control-container">
